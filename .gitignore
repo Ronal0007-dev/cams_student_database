@@ -1,0 +1,9 @@
+node_modules/
+.env
+.DS_Store
+README.md
+# Ignore the .env file which contains sensitive information
+# Ignore the node_modules directory which contains installed dependencies
+# Ignore the .DS_Store file which is a macOS system file
+# Ignore the README.md file which is a documentation file
+# The following files have been recently edited and should not be ignored:
