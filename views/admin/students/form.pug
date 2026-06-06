@@ -14,42 +14,76 @@ block content
     form(action=action method="POST" class="styled-form")
       if student
         input(type="hidden" name="_method" value="PUT")
-      
+
+      //- ── Section 1: Personal Info ──
       .form-section
         h3.section-title
           i.fas.fa-user
           span Personal Information
+
         .form-row
           .form-group.col-2
             label(for="StudentFullName") Full Name *
-            input#StudentFullName(type="text" name="StudentFullName" value=student ? student.StudentFullName : '' placeholder="e.g. John Michael Doe" required)
+            input#StudentFullName(
+              type="text" name="StudentFullName"
+              value=student ? student.StudentFullName : ''
+              placeholder="e.g. John Michael Doe" required autofocus)
           .form-group
             label(for="Gender") Gender *
             select#Gender(name="Gender" required)
               option(value="") Select gender
-              option(value="Male" selected=student && student.Gender==='Male') Male
+              option(value="Male"   selected=student && student.Gender==='Male')   Male
               option(value="Female" selected=student && student.Gender==='Female') Female
-        
+
         .form-row
           .form-group
             label(for="DateOfBirth") Date of Birth
-            input#DateOfBirth(type="date" name="DateOfBirth" value=student && student.DateOfBirth ? student.DateOfBirth.toString().split('T')[0] : '')
-          .form-group
-            label(for="AdmissionNumber") Admission Number
-            input#AdmissionNumber(type="text" name="AdmissionNumber" value=student ? student.AdmissionNumber || '' : '' placeholder="e.g. ADM/2024/001")
+            input#DateOfBirth(
+              type="date" name="DateOfBirth"
+              value=student && student.DateOfBirth ? student.DateOfBirth.toString().split('T')[0] : '')
           .form-group
             label(for="AdmissionDate") Admission Date
-            input#AdmissionDate(type="date" name="AdmissionDate" value=student && student.AdmissionDate ? student.AdmissionDate.toString().split('T')[0] : '')
-        
+            input#AdmissionDate(
+              type="date" name="AdmissionDate"
+              value=student && student.AdmissionDate ? student.AdmissionDate.toString().split('T')[0] : new Date().toISOString().split('T')[0])
+
         .form-row
           .form-group.col-2
             label(for="Address") Address
             textarea#Address(name="Address" rows="2" placeholder="Student's home address")= student ? student.Address || '' : ''
-      
+
+      //- ── Section 2: Admission Number ──
+      .form-section
+        h3.section-title
+          i.fas.fa-id-badge
+          span Admission Number
+
+        .adm-number-block
+          .adm-display
+            .adm-icon
+              i.fas.fa-hashtag
+            .adm-info
+              span.adm-label Auto-Generated Admission Number
+              span.adm-value#admNoDisplay= student ? (student.AdmissionNumber || 'Not assigned') : (nextAdmNo || 'Generating…')
+              if !student
+                span.adm-hint This number is assigned automatically and cannot be changed.
+              else
+                span.adm-hint Admission number is locked once assigned.
+          if !student
+            .adm-badge
+              i.fas.fa-lock
+              span System Assigned
+
+        //- Hidden input that carries the value — read-only, not in the POST body for new (server generates it)
+        //- For display purposes only; submission ignores it server-side
+        input(type="hidden" name="_admNo_display" value=student ? student.AdmissionNumber || '' : nextAdmNo || '')
+
+      //- ── Section 3: Academic Placement ──
       .form-section
         h3.section-title
           i.fas.fa-chalkboard
           span Academic Placement
+
         .form-row
           .form-group
             label(for="ClassID") Class *
@@ -69,22 +103,30 @@ block content
           .form-group
             label(for="Status") Status
             select#Status(name="Status")
-              option(value="Ongoing" selected=!student || student.Status==='Ongoing') Ongoing
-              option(value="Completed" selected=student && student.Status==='Completed') Completed
-              option(value="Transferred" selected=student && student.Status==='Transferred') Transferred
-      
+              option(value="Ongoing"     selected=!student || student.Status==='Ongoing')     Ongoing
+              option(value="Completed"   selected=student && student.Status==='Completed')    Completed
+              option(value="Transferred" selected=student && student.Status==='Transferred')  Transferred
+
+      //- ── Section 4: Parent Contact ──
       .form-section
         h3.section-title
           i.fas.fa-phone
           span Parent / Guardian Contact
+
         .form-row
           .form-group
             label(for="ParentPhone") Phone Number
-            input#ParentPhone(type="tel" name="ParentPhone" value=student ? student.ParentPhone || '' : '' placeholder="+255 7XX XXX XXX")
+            input#ParentPhone(
+              type="tel" name="ParentPhone"
+              value=student ? student.ParentPhone || '' : ''
+              placeholder="+255 7XX XXX XXX")
           .form-group.col-2
             label(for="ParentEmail") Email Address
-            input#ParentEmail(type="email" name="ParentEmail" value=student ? student.ParentEmail || '' : '' placeholder="parent@email.com")
-      
+            input#ParentEmail(
+              type="email" name="ParentEmail"
+              value=student ? student.ParentEmail || '' : ''
+              placeholder="parent@email.com")
+
       .form-actions
         button.btn.btn-primary(type="submit")
           i(class=student ? 'fas fa-save' : 'fas fa-user-plus')
@@ -93,20 +135,21 @@ block content
 
 block scripts
   script.
-    // Preload streams on edit
+    // Pre-load streams on edit mode
     const preloadClassId = document.getElementById('ClassID').value;
-    const preloadStmId = #{student ? student.StmID || 'null' : 'null'};
-    if (preloadClassId) {
-      loadStreams(preloadClassId, preloadStmId);
-    }
+    const preloadStmId   = !{student ? (student.StmID || 'null') : 'null'};
+    if (preloadClassId) loadStreams(preloadClassId, preloadStmId);
 
-    async function loadStreams(classId, preselect) {
-      const sel = document.getElementById('StmID');
-      sel.innerHTML = '<option value="">Loading...</option>';
-      if (!classId) { sel.innerHTML = '<option value="">Select stream (optional)</option>'; return; }
-      const res = await fetch('/streams/by-class/' + classId);
-      const streams = await res.json();
-      sel.innerHTML = '<option value="">No stream</option>' + streams.map(s =>
-        `<option value="${s.StmID}" ${preselect == s.StmID ? 'selected' : ''}>${s.StmName}</option>`
-      ).join('');
+    // Refresh admission number preview for new student forms
+    // (the server always generates the real one on POST, this just keeps UI fresh)
+    if (!#{!!student}) {
+      fetch('/students/api/next-adm-no')
+        .then(r => r.json())
+        .then(data => {
+          if (data.admNo) {
+            const el = document.getElementById('admNoDisplay');
+            if (el) el.textContent = data.admNo;
+          }
+        })
+        .catch(() => {});
     }
