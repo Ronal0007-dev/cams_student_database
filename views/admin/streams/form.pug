@@ -1,0 +1,30 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i(class=stream ? 'fas fa-pen' : 'fas fa-plus')
+      span= stream ? 'Edit Stream' : 'Add Stream'
+    .page-actions
+      a.btn.btn-ghost(href="/streams")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card.form-sm
+    form(action=action method="POST" class="styled-form")
+      if stream
+        input(type="hidden" name="_method" value="PUT")
+      .form-group
+        label(for="StmName") Stream Name *
+        input#StmName(type="text" name="StmName" value=stream ? stream.StmName : '' placeholder="e.g. Stream A, North, Science" required)
+      .form-group
+        label(for="ClassID") Class *
+        select#ClassID(name="ClassID" required)
+          option(value="") Select class
+          each c in classes
+            option(value=c.ClassID selected=stream && stream.ClassID==c.ClassID)= c.ClassName
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i.fas.fa-save
+          span= stream ? 'Update' : 'Create Stream'
+        a.btn.btn-ghost(href="/streams") Cancel

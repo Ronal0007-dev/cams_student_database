@@ -1,0 +1,34 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i(class=cls ? 'fas fa-pen' : 'fas fa-plus')
+      span= cls ? 'Edit Class' : 'Add Class'
+    .page-actions
+      a.btn.btn-ghost(href="/classes")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card.form-sm
+    form(action=action method="POST" class="styled-form")
+      if cls
+        input(type="hidden" name="_method" value="PUT")
+      .form-group
+        label(for="ClassName") Class Name *
+        input#ClassName(type="text" name="ClassName" value=cls ? cls.ClassName : '' placeholder="e.g. Form 1, Grade 7, Year 10" required)
+      .form-group
+        label(for="DeptID") Department *
+        select#DeptID(name="DeptID" required)
+          option(value="") Select department
+          each d in departments
+            option(value=d.DeptID selected=cls && cls.DeptID==d.DeptID)= d.DeptName
+      .form-group
+        label(for="Level") Level / Order
+        input#Level(type="number" name="Level" value=cls ? cls.Level || 1 : 1 min="1" max="20" placeholder="1")
+        p.field-hint Used for promotion ordering (1 = first class, higher = later)
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i.fas.fa-save
+          span= cls ? 'Update' : 'Create Class'
+        a.btn.btn-ghost(href="/classes") Cancel

@@ -1,0 +1,112 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i(class=student ? 'fas fa-user-edit' : 'fas fa-user-plus')
+      span= student ? 'Edit Student' : 'Add New Student'
+    .page-actions
+      a.btn.btn-ghost(href="/students")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card
+    form(action=action method="POST" class="styled-form")
+      if student
+        input(type="hidden" name="_method" value="PUT")
+      
+      .form-section
+        h3.section-title
+          i.fas.fa-user
+          span Personal Information
+        .form-row
+          .form-group.col-2
+            label(for="StudentFullName") Full Name *
+            input#StudentFullName(type="text" name="StudentFullName" value=student ? student.StudentFullName : '' placeholder="e.g. John Michael Doe" required)
+          .form-group
+            label(for="Gender") Gender *
+            select#Gender(name="Gender" required)
+              option(value="") Select gender
+              option(value="Male" selected=student && student.Gender==='Male') Male
+              option(value="Female" selected=student && student.Gender==='Female') Female
+        
+        .form-row
+          .form-group
+            label(for="DateOfBirth") Date of Birth
+            input#DateOfBirth(type="date" name="DateOfBirth" value=student && student.DateOfBirth ? student.DateOfBirth.toString().split('T')[0] : '')
+          .form-group
+            label(for="AdmissionNumber") Admission Number
+            input#AdmissionNumber(type="text" name="AdmissionNumber" value=student ? student.AdmissionNumber || '' : '' placeholder="e.g. ADM/2024/001")
+          .form-group
+            label(for="AdmissionDate") Admission Date
+            input#AdmissionDate(type="date" name="AdmissionDate" value=student && student.AdmissionDate ? student.AdmissionDate.toString().split('T')[0] : '')
+        
+        .form-row
+          .form-group.col-2
+            label(for="Address") Address
+            textarea#Address(name="Address" rows="2" placeholder="Student's home address")= student ? student.Address || '' : ''
+      
+      .form-section
+        h3.section-title
+          i.fas.fa-chalkboard
+          span Academic Placement
+        .form-row
+          .form-group
+            label(for="ClassID") Class *
+            select#ClassID(name="ClassID" required onchange="loadStreams(this.value)")
+              option(value="") Select class
+              each c in classes
+                option(value=c.ClassID selected=student && student.ClassID==c.ClassID)= c.ClassName
+          .form-group
+            label(for="StmID") Stream
+            select#StmID(name="StmID")
+              option(value="") Select stream (optional)
+              if student && student.StmID
+                each c in classes
+                  if student.ClassID == c.ClassID
+                    each s in c.Streams
+                      option(value=s.StmID selected=student.StmID==s.StmID)= s.StmName
+          .form-group
+            label(for="Status") Status
+            select#Status(name="Status")
+              option(value="Ongoing" selected=!student || student.Status==='Ongoing') Ongoing
+              option(value="Completed" selected=student && student.Status==='Completed') Completed
+              option(value="Transferred" selected=student && student.Status==='Transferred') Transferred
+      
+      .form-section
+        h3.section-title
+          i.fas.fa-phone
+          span Parent / Guardian Contact
+        .form-row
+          .form-group
+            label(for="ParentPhone") Phone Number
+            input#ParentPhone(type="tel" name="ParentPhone" value=student ? student.ParentPhone || '' : '' placeholder="+255 7XX XXX XXX")
+          .form-group.col-2
+            label(for="ParentEmail") Email Address
+            input#ParentEmail(type="email" name="ParentEmail" value=student ? student.ParentEmail || '' : '' placeholder="parent@email.com")
+      
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i(class=student ? 'fas fa-save' : 'fas fa-user-plus')
+          span= student ? 'Update Student' : 'Add Student'
+        a.btn.btn-ghost(href="/students") Cancel
+
+block scripts
+  script.
+    // Preload streams on edit
+    const preloadClassId = document.getElementById('ClassID').value;
+    const preloadStmId = #{student ? student.StmID || 'null' : 'null'};
+    if (preloadClassId) {
+      loadStreams(preloadClassId, preloadStmId);
+    }
+
+    async function loadStreams(classId, preselect) {
+      const sel = document.getElementById('StmID');
+      sel.innerHTML = '<option value="">Loading...</option>';
+      if (!classId) { sel.innerHTML = '<option value="">Select stream (optional)</option>'; return; }
+      const res = await fetch('/streams/by-class/' + classId);
+      const streams = await res.json();
+      sel.innerHTML = '<option value="">No stream</option>' + streams.map(s =>
+        `<option value="${s.StmID}" ${preselect == s.StmID ? 'selected' : ''}>${s.StmName}</option>`
+      ).join('');
+    }

@@ -1,0 +1,129 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Student List — Print
+    link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet")
+    style.
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Outfit', sans-serif; background: #fff; color: #1a1a2e; font-size: 13px; }
+
+      .print-page { padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+
+      /* Header */
+      .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #1d4ed8; padding-bottom: 14px; margin-bottom: 18px; }
+      .school-brand { display: flex; align-items: center; gap: 12px; }
+      .school-icon { width: 48px; height: 48px; background: linear-gradient(135deg,#1d4ed8,#7c3aed); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+      .school-icon svg { width: 26px; height: 26px; fill: #fff; }
+      .school-name { font-size: 1.3rem; font-weight: 800; color: #1d4ed8; }
+      .school-sub  { font-size: 0.75rem; color: #64748b; }
+      .print-meta  { text-align: right; font-size: 0.75rem; color: #64748b; line-height: 1.6; }
+      .report-title { font-size: 1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
+
+      /* Summary pills */
+      .summary-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+      .summary-pill { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 4px 14px; font-size: 0.78rem; font-weight: 600; color: #1d4ed8; }
+      .summary-pill.boys   { background: #eff6ff; border-color: #93c5fd; }
+      .summary-pill.girls  { background: #fdf2f8; border-color: #f9a8d4; color: #be185d; }
+      .summary-pill.total  { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+
+      /* Table */
+      table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+      thead tr { background: #1d4ed8; color: #fff; }
+      thead th { padding: 9px 10px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; }
+      tbody tr:nth-child(even) { background: #f8fafc; }
+      tbody tr:hover { background: #eff6ff; }
+      tbody td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.82rem; vertical-align: middle; }
+      .cell-num { color: #94a3b8; font-weight: 600; width: 36px; }
+      .status-ongoing     { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+      .status-completed   { background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+      .status-transferred { background: #fef9c3; color: #a16207; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+
+      /* Footer */
+      .print-footer { border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; }
+      .sig-line { border-top: 1px solid #94a3b8; padding-top: 4px; margin-top: 32px; width: 180px; text-align: center; font-size: 0.72rem; color: #64748b; }
+
+      /* Screen-only controls */
+      .screen-only { margin-bottom: 16px; display: flex; gap: 10px; }
+      .screen-only button { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.85rem; }
+      .btn-print  { background: #1d4ed8; color: #fff; }
+      .btn-close  { background: #f1f5f9; color: #334155; }
+
+      @media print {
+        .screen-only { display: none !important; }
+        body { font-size: 12px; }
+        thead tr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        tbody tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .status-ongoing, .status-completed, .status-transferred { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+  body
+    .print-page
+      .screen-only
+        button.btn-print(onclick="window.print()")
+          | 🖨 Print / Save PDF
+        button.btn-close(onclick="window.close()") Close
+
+      .print-header
+        .school-brand
+          .school-icon
+            svg(viewBox="0 0 24 24")
+              path(d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z")
+          div
+            .school-name Student Management System
+            .school-sub School Administration Portal
+        .print-meta
+          .report-title Student List Report
+          div Printed: #{printDate}
+          if query.classId
+            div Filtered by class
+          if query.status
+            div Status: #{query.status}
+
+      //- Summary
+      .summary-bar
+        span.summary-pill.total Total: #{students.length} students
+        span.summary-pill.boys Boys: #{students.filter(s => s.Gender === 'Male').length}
+        span.summary-pill.girls Girls: #{students.filter(s => s.Gender === 'Female').length}
+        if query.status
+          span.summary-pill Status: #{query.status}
+        if students.length > 0 && students[0].Class
+          span.summary-pill Class: #{students[0].Class.ClassName}
+
+      table
+        thead
+          tr
+            th # 
+            th Student Full Name
+            th Class
+            th Stream
+            th Gender
+            th Status
+            th Admission No.
+            th Parent Phone
+        tbody
+          each s, i in students
+            tr
+              td.cell-num= i + 1
+              td= s.StudentFullName
+              td= s.Class  ? s.Class.ClassName  : '—'
+              td= s.Stream ? s.Stream.StmName   : '—'
+              td= s.Gender
+              td
+                span(class=`status-${s.Status.toLowerCase()}`)= s.Status
+              td= s.AdmissionNumber || '—'
+              td= s.ParentPhone || '—'
+
+      .print-footer
+        div SMS — Student Management System
+        div Total Records: #{students.length}
+        div Page 1 of 1
+
+      div(style="margin-top:40px;display:flex;justify-content:space-between;")
+        .sig-line Prepared By
+        .sig-line Verified By
+        .sig-line Date
+
+    script.
+      // Auto-trigger print dialog on open if desired
+      // window.onload = () => window.print();

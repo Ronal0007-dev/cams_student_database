@@ -1,0 +1,27 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i(class=dept ? 'fas fa-pen' : 'fas fa-plus')
+      span= dept ? 'Edit Department' : 'Add Department'
+    .page-actions
+      a.btn.btn-ghost(href="/departments")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card.form-sm
+    form(action=action method="POST" class="styled-form")
+      if dept
+        input(type="hidden" name="_method" value="PUT")
+      .form-group
+        label(for="DeptName") Department Name *
+        input#DeptName(type="text" name="DeptName" value=dept ? dept.DeptName : '' placeholder="e.g. Science & Technology" required)
+      .form-group
+        label(for="Description") Description
+        textarea#Description(name="Description" rows="3" placeholder="Brief description of this department")= dept ? dept.Description || '' : ''
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i.fas.fa-save
+          span= dept ? 'Update' : 'Create Department'
+        a.btn.btn-ghost(href="/departments") Cancel

@@ -1,0 +1,92 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-chalkboard
+      span Classes
+      span.count-badge= count
+    .page-actions
+      if role === 'admin'
+        a.btn.btn-primary(href="/classes/new")
+          i.fas.fa-plus
+          span Add Class
+
+  form.filter-bar(method="GET" action="/classes")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search classes..." value=search || '')
+    .filter-group
+      select(name="deptId")
+        option(value="") All Departments
+        each d in departments
+          option(value=d.DeptID selected=(deptId == d.DeptID))= d.DeptName
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Search
+    if search || deptId
+      a.btn.btn-ghost(href="/classes") Clear
+
+  .table-card
+    if classes.length === 0
+      .empty-state
+        i.fas.fa-chalkboard
+        p No classes found
+        if role === 'admin'
+          a.btn.btn-primary(href="/classes/new") Add First Class
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Class Name
+              th Department
+              th Streams
+              th Students
+              th Level
+              th Actions
+          tbody
+            each c, i in classes
+              tr
+                td.cell-num= (currentPage - 1) * 10 + i + 1
+                td
+                  .icon-cell
+                    i.fas.fa-chalkboard
+                    span= c.ClassName
+                td= c.Department ? c.Department.DeptName : '—'
+                td
+                  span.count-chip= c.Streams ? c.Streams.length : 0
+                td
+                  span.count-chip= c.Students ? c.Students.length : 0
+                td= c.Level || 1
+                td.actions-cell
+                  a.btn-icon.btn-edit(href=`/classes/${c.ClassID}/edit` title="Edit")
+                    i.fas.fa-pen
+                  if role === 'admin'
+                    form(action=`/classes/${c.ClassID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this class?')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/classes?page=${currentPage - 1}&search=${search || ''}&deptId=${deptId || ''}`)
+              i.fas.fa-chevron-left
+          - let start = Math.max(1, currentPage - 2)
+          - let end = Math.min(totalPages, currentPage + 2)
+          if start > 1
+            a.page-btn(href=`/classes?page=1&search=${search || ''}&deptId=${deptId || ''}`) 1
+            if start > 2
+              span.page-ellipsis …
+          each n in Array.from({length: end - start + 1}, (_, i) => start + i)
+            a.page-btn(href=`/classes?page=${n}&search=${search || ''}&deptId=${deptId || ''}` class=(n === currentPage ? 'active' : ''))= n
+          if end < totalPages
+            if end < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/classes?page=${totalPages}&search=${search || ''}&deptId=${deptId || ''}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/classes?page=${currentPage + 1}&search=${search || ''}&deptId=${deptId || ''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * 10 + 1}–#{Math.min(currentPage * 10, count)} of #{count} classes

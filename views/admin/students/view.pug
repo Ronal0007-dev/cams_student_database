@@ -1,0 +1,93 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-id-card
+      span Student Profile
+    .page-actions
+      if role !== 'viewer'
+        a.btn.btn-primary(href=`/students/${student.StudentID}/edit`)
+          i.fas.fa-pen
+          span Edit
+      a.btn.btn-ghost(href="/students")
+        i.fas.fa-arrow-left
+        span Back
+
+  .profile-card
+    .profile-header
+      .profile-avatar(class=student.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+        = student.StudentFullName.charAt(0)
+      .profile-meta
+        h2= student.StudentFullName
+        .profile-tags
+          span.status-pill(class=`status-${student.Status.toLowerCase()}`)= student.Status
+          span.gender-badge(class=student.Gender === 'Male' ? 'gender-m' : 'gender-f')
+            i(class=student.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+            = student.Gender
+          if student.Class
+            span.class-tag
+              i.fas.fa-chalkboard
+              = student.Class.ClassName
+    
+    .profile-body
+      .info-grid
+        .info-section
+          h3 Academic Info
+          .info-row
+            span.info-label
+              i.fas.fa-id-badge
+              span Admission No.
+            span.info-val= student.AdmissionNumber || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-calendar-plus
+              span Admission Date
+            span.info-val= student.AdmissionDate ? new Date(student.AdmissionDate).toLocaleDateString() : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-building-columns
+              span Department
+            span.info-val= student.Class && student.Class.Department ? student.Class.Department.DeptName : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-chalkboard
+              span Class
+            span.info-val= student.Class ? student.Class.ClassName : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-stream
+              span Stream
+            span.info-val= student.Stream ? student.Stream.StmName : '—'
+        
+        .info-section
+          h3 Personal Info
+          .info-row
+            span.info-label
+              i.fas.fa-birthday-cake
+              span Date of Birth
+            span.info-val= student.DateOfBirth ? new Date(student.DateOfBirth).toLocaleDateString() : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-home
+              span Address
+            span.info-val= student.Address || '—'
+        
+        .info-section
+          h3 Parent / Guardian
+          .info-row
+            span.info-label
+              i.fas.fa-phone
+              span Phone
+            if student.ParentPhone
+              a.info-val.link(href=`tel:${student.ParentPhone}`)= student.ParentPhone
+            else
+              span.info-val —
+          .info-row
+            span.info-label
+              i.fas.fa-envelope
+              span Email
+            if student.ParentEmail
+              a.info-val.link(href=`mailto:${student.ParentEmail}`)= student.ParentEmail
+            else
+              span.info-val —

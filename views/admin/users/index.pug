@@ -1,0 +1,92 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-users-cog
+      span User Management
+      span.count-badge= count
+    .page-actions
+      a.btn.btn-primary(href="/users/new")
+        i.fas.fa-user-plus
+        span Create User
+
+  form.filter-bar(method="GET" action="/users")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search by name, username or email..." value=search || '')
+    .filter-group
+      select(name="role")
+        option(value="") All Roles
+        option(value="admin" selected=(role === 'admin')) Admin
+        option(value="teacher" selected=(role === 'teacher')) Teacher
+        option(value="viewer" selected=(role === 'viewer')) Viewer
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Search
+    if search || role
+      a.btn.btn-ghost(href="/users") Clear
+
+  .table-card
+    if users.length === 0
+      .empty-state
+        i.fas.fa-users
+        p No users found
+        a.btn.btn-primary(href="/users/new") Create First User
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Name
+              th Username
+              th Email
+              th Role
+              th Status
+              th Actions
+          tbody
+            each u, i in users
+              tr
+                td.cell-num= (currentPage - 1) * 10 + i + 1
+                td
+                  .student-cell
+                    .mini-avatar.avatar-user= u.FullName.charAt(0)
+                    span= u.FullName
+                td
+                  code.mono= u.Username
+                td= u.Email
+                td
+                  span.role-badge(class=`role-${u.Role}`)= u.Role
+                td
+                  span.status-pill(class=u.IsActive ? 'status-ongoing' : 'status-transferred')= u.IsActive ? 'Active' : 'Inactive'
+                td.actions-cell
+                  a.btn-icon.btn-edit(href=`/users/${u.UserID}/edit` title="Edit")
+                    i.fas.fa-pen
+                  if u.UserID != (user ? user.id : 0)
+                    form(action=`/users/${u.UserID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this user?')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/users?page=${currentPage - 1}&search=${search || ''}&role=${role || ''}`)
+              i.fas.fa-chevron-left
+          - let start = Math.max(1, currentPage - 2)
+          - let end = Math.min(totalPages, currentPage + 2)
+          if start > 1
+            a.page-btn(href=`/users?page=1&search=${search || ''}&role=${role || ''}`) 1
+            if start > 2
+              span.page-ellipsis …
+          each n in Array.from({length: end - start + 1}, (_, i) => start + i)
+            a.page-btn(href=`/users?page=${n}&search=${search || ''}&role=${role || ''}` class=(n === currentPage ? 'active' : ''))= n
+          if end < totalPages
+            if end < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/users?page=${totalPages}&search=${search || ''}&role=${role || ''}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/users?page=${currentPage + 1}&search=${search || ''}&role=${role || ''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * 10 + 1}–#{Math.min(currentPage * 10, count)} of #{count} users

@@ -1,0 +1,82 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-building-columns
+      span Departments
+      span.count-badge= count
+    .page-actions
+      if role === 'admin'
+        a.btn.btn-primary(href="/departments/new")
+          i.fas.fa-plus
+          span Add Department
+
+  form.filter-bar(method="GET" action="/departments")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search departments..." value=search || '')
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Search
+    if search
+      a.btn.btn-ghost(href="/departments") Clear
+
+  .table-card
+    if departments.length === 0
+      .empty-state
+        i.fas.fa-building-columns
+        p No departments found
+        if role === 'admin'
+          a.btn.btn-primary(href="/departments/new") Add First Department
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Department Name
+              th Description
+              th Classes
+              th Actions
+          tbody
+            each d, i in departments
+              tr
+                td.cell-num= (currentPage - 1) * 10 + i + 1
+                td
+                  .icon-cell
+                    i.fas.fa-building-columns
+                    span= d.DeptName
+                td= d.Description || '—'
+                td
+                  span.count-chip= d.Classes ? d.Classes.length : 0
+                td.actions-cell
+                  a.btn-icon.btn-edit(href=`/departments/${d.DeptID}/edit` title="Edit")
+                    i.fas.fa-pen
+                  if role === 'admin'
+                    form(action=`/departments/${d.DeptID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this department?')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/departments?page=${currentPage - 1}&search=${search || ''}`)
+              i.fas.fa-chevron-left
+          - let start = Math.max(1, currentPage - 2)
+          - let end = Math.min(totalPages, currentPage + 2)
+          if start > 1
+            a.page-btn(href=`/departments?page=1&search=${search || ''}`) 1
+            if start > 2
+              span.page-ellipsis …
+          each n in Array.from({length: end - start + 1}, (_, i) => start + i)
+            a.page-btn(href=`/departments?page=${n}&search=${search || ''}` class=(n === currentPage ? 'active' : ''))= n
+          if end < totalPages
+            if end < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/departments?page=${totalPages}&search=${search || ''}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/departments?page=${currentPage + 1}&search=${search || ''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * 10 + 1}–#{Math.min(currentPage * 10, count)} of #{count} departments

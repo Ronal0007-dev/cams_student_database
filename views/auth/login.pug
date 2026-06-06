@@ -1,0 +1,46 @@
+extends ../layout
+
+block content
+  .login-page
+    .login-card
+      .login-header
+        .login-icon
+          i.fas.fa-graduation-cap
+        h1.login-title Student Management
+        p.login-subtitle System — Secure Access
+
+      if error && error.length
+        .alert.alert-error
+          i.fas.fa-exclamation-circle
+          span= error[0]
+
+      form.login-form(action="/auth/login" method="POST")
+        .form-group
+          label(for="username")
+            i.fas.fa-user
+            span Username
+          input#username(type="text" name="username" placeholder="Enter your username" required autocomplete="username")
+        
+        .form-group
+          label(for="password")
+            i.fas.fa-lock
+            span Password
+          .password-wrap
+            input#password(type="password" name="password" placeholder="Enter your password" required autocomplete="current-password")
+            button.toggle-pw(type="button" onclick="togglePw()")
+              i.fas.fa-eye#pwIcon
+        
+        button.btn.btn-primary.btn-full(type="submit")
+          i.fas.fa-sign-in-alt
+          span Sign In
+
+      .login-footer
+        p Powered by CAMS ICT Dept. ❤️ v1.0 &copy; 2026
+
+  script.
+    function togglePw() {
+      const pw = document.getElementById('password');
+      const ic = document.getElementById('pwIcon');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+      ic.className = pw.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }

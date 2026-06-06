@@ -1,0 +1,289 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-user-graduate
+      span Students
+      span.count-badge= count
+    .page-actions
+      if role === 'admin'
+        button.btn.btn-warning#promoteBtn
+          i.fas.fa-level-up-alt
+          span Promote Class
+      a.btn.btn-secondary#printBtn(href="#")
+        i.fas.fa-print
+        span Print List
+      if role !== 'viewer'
+        a.btn.btn-primary(href="/students/new")
+          i.fas.fa-user-plus
+          span Add Student
+
+  //- Filters
+  form.filter-bar#filterForm(method="GET" action="/students")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search students..." value=query.search || '')
+    .filter-group
+      select(name="classId")
+        option(value="") All Classes
+        each c in classes
+          option(value=c.ClassID selected=(query.classId == c.ClassID))= c.ClassName
+    .filter-group
+      select(name="status")
+        option(value="") All Status
+        option(value="Ongoing"     selected=(query.status==='Ongoing'))     Ongoing
+        option(value="Completed"   selected=(query.status==='Completed'))   Completed
+        option(value="Transferred" selected=(query.status==='Transferred')) Transferred
+    .filter-group
+      select(name="gender")
+        option(value="") All Gender
+        option(value="Male"   selected=(query.gender==='Male'))   Male
+        option(value="Female" selected=(query.gender==='Female')) Female
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Filter
+    if query.search || query.classId || query.status || query.gender
+      a.btn.btn-ghost(href="/students") Clear
+
+  //- Table
+  .table-card
+    if students.length === 0
+      .empty-state
+        i.fas.fa-user-slash
+        p No students found
+        if role !== 'viewer'
+          a.btn.btn-primary(href="/students/new") Add First Student
+    else
+      .table-wrap
+        table.data-table#studentTable
+          thead
+            tr
+              th #
+              th Student Name
+              th Class
+              th Stream
+              th Gender
+              th Status
+              th Parent Contact
+              th.no-print Actions
+          tbody
+            each s, i in students
+              tr
+                td.cell-num= (currentPage - 1) * pageSize + i + 1
+                td
+                  .student-cell
+                    .mini-avatar(class=s.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+                      = s.StudentFullName.charAt(0)
+                    span= s.StudentFullName
+                td= s.Class  ? s.Class.ClassName  : '—'
+                td= s.Stream ? s.Stream.StmName   : '—'
+                td
+                  span.gender-badge(class=s.Gender === 'Male' ? 'gender-m' : 'gender-f')
+                    i(class=s.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+                    = ' ' + s.Gender
+                td
+                  span.status-pill(class=`status-${s.Status.toLowerCase()}`)= s.Status
+                td
+                  if s.ParentPhone
+                    a.contact-link(href=`tel:${s.ParentPhone}` title=s.ParentPhone)
+                      i.fas.fa-phone
+                  if s.ParentEmail
+                    a.contact-link(href=`mailto:${s.ParentEmail}` title=s.ParentEmail)
+                      i.fas.fa-envelope
+                td.actions-cell.no-print
+                  a.btn-icon.btn-view(href=`/students/${s.StudentID}` title="View")
+                    i.fas.fa-eye
+                  if role !== 'viewer'
+                    a.btn-icon.btn-edit(href=`/students/${s.StudentID}/edit` title="Edit")
+                      i.fas.fa-pen
+                    button.btn-icon.btn-move(onclick=`openMoveModal(${s.StudentID},'${s.StudentFullName.replace(/'/g,"\\'")}',${s.ClassID})` title="Move")
+                      i.fas.fa-arrows-alt
+                  if role === 'admin'
+                    form(action=`/students/${s.StudentID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this student?')" title="Delete")
+                        i.fas.fa-trash
+
+      //- Pagination
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/students?page=${currentPage - 1}&search=${query.search||''}&classId=${query.classId||''}&status=${query.status||''}&gender=${query.gender||''}`)
+              i.fas.fa-chevron-left
+          - let start = Math.max(1, currentPage - 2)
+          - let end   = Math.min(totalPages, currentPage + 2)
+          if start > 1
+            a.page-btn(href=`/students?page=1&search=${query.search||''}&classId=${query.classId||''}&status=${query.status||''}&gender=${query.gender||''}`) 1
+            if start > 2
+              span.page-ellipsis …
+          each n in Array.from({length: end - start + 1}, (_, i) => start + i)
+            a.page-btn(href=`/students?page=${n}&search=${query.search||''}&classId=${query.classId||''}&status=${query.status||''}&gender=${query.gender||''}` class=(n === currentPage ? 'active' : ''))= n
+          if end < totalPages
+            if end < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/students?page=${totalPages}&search=${query.search||''}&classId=${query.classId||''}&status=${query.status||''}&gender=${query.gender||''}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/students?page=${currentPage + 1}&search=${query.search||''}&classId=${query.classId||''}&status=${query.status||''}&gender=${query.gender||''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * pageSize + 1}–#{Math.min(currentPage * pageSize, count)} of #{count} students
+
+  //- ── Move Student Modal ──
+  #moveModal.modal(style="display:none")
+    .modal-overlay(onclick="closeMoveModal()")
+    .modal-box
+      .modal-header
+        h3
+          i.fas.fa-arrows-alt
+          span Move Student
+        button.modal-close(onclick="closeMoveModal()") ×
+      .modal-body
+        p.modal-student-name#moveStudentName
+        form#moveForm(method="POST")
+          .form-group
+            label Destination Class
+            select#moveClassSelect(name="newClassID" required onchange="loadStreams(this.value,'moveStreamSelect')")
+              option(value="") Select class...
+              each c in classes
+                option(value=c.ClassID)= c.ClassName
+          .form-group
+            label Stream (optional)
+            select#moveStreamSelect(name="newStmID")
+              option(value="") Select stream...
+          .form-group
+            label Update Status
+            select(name="newStatus")
+              option(value="")           Keep current status
+              option(value="Ongoing")    Ongoing
+              option(value="Completed")  Completed
+              option(value="Transferred") Transferred
+          .modal-actions
+            button.btn.btn-primary(type="submit")
+              i.fas.fa-check
+              span Confirm Move
+            button.btn.btn-ghost(type="button" onclick="closeMoveModal()") Cancel
+
+  //- ── Promote Class Modal ──
+  #bulkMoveModal.modal(style="display:none")
+    .modal-overlay(onclick="closeBulkModal()")
+    .modal-box.modal-box-wide
+      .modal-header
+        h3
+          i.fas.fa-level-up-alt
+          span Promote Entire Class
+        button.modal-close(onclick="closeBulkModal()") ×
+      .modal-body
+        .alert-info
+          i.fas.fa-info-circle
+          span Moves ALL <strong>Ongoing</strong> students from one class to another.
+        form#bulkForm(action="/students/bulk/move" method="POST")
+          .promote-grid
+            .promote-col
+              .promote-col-label
+                i.fas.fa-arrow-circle-right
+                span From Class
+              .form-group
+                label Source Class *
+                select#bulkFrom(name="fromClassID" required onchange="onFromClassChange(this.value)")
+                  option(value="") Select source class...
+                  each c in classes
+                    option(value=c.ClassID)= c.ClassName
+              .from-preview#fromPreview.preview-box(style="display:none")
+                .preview-loading
+                  i.fas.fa-spinner.fa-spin
+                  span Loading students...
+            
+            .promote-arrow
+              i.fas.fa-arrow-right
+            
+            .promote-col
+              .promote-col-label
+                i.fas.fa-check-circle
+                span To Class
+              .form-group
+                label Destination Class *
+                select#bulkTo(name="toClassID" required onchange="loadStreams(this.value,'bulkStream')")
+                  option(value="") Select destination class...
+                  each c in classes
+                    option(value=c.ClassID)= c.ClassName
+              .form-group
+                label Stream in Destination (optional)
+                select#bulkStream(name="toStmID")
+                  option(value="") No specific stream
+              .form-group
+                label Set Status After Move
+                select(name="setStatus")
+                  option(value="")            Keep as Ongoing
+                  option(value="Completed")   Mark as Completed
+                  option(value="Transferred") Mark as Transferred
+
+          .modal-actions
+            button.btn.btn-warning(type="submit" onclick="return confirmBulkMove()")
+              i.fas.fa-level-up-alt
+              span Promote Class
+            button.btn.btn-ghost(type="button" onclick="closeBulkModal()") Cancel
+
+block scripts
+  script.
+    // ── Move single student ──
+    function openMoveModal(id, name, classId) {
+      document.getElementById('moveStudentName').textContent = 'Moving: ' + name;
+      document.getElementById('moveForm').action = '/students/' + id + '/move';
+      document.getElementById('moveModal').style.display = 'flex';
+      document.getElementById('moveClassSelect').value = classId;
+      loadStreams(classId, 'moveStreamSelect');
+    }
+    function closeMoveModal() { document.getElementById('moveModal').style.display = 'none'; }
+
+    // ── Promote class ──
+    document.getElementById('promoteBtn') && document.getElementById('promoteBtn').addEventListener('click', () => {
+      document.getElementById('bulkMoveModal').style.display = 'flex';
+    });
+    function closeBulkModal() { document.getElementById('bulkMoveModal').style.display = 'none'; }
+
+    async function onFromClassChange(classId) {
+      const preview = document.getElementById('fromPreview');
+      if (!classId) { preview.style.display = 'none'; return; }
+      preview.style.display = 'block';
+      preview.innerHTML = '<div class="preview-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+      try {
+        const res = await fetch('/students?classId=' + classId + '&status=Ongoing&page=1', {headers:{'Accept':'application/json'}});
+        // Fallback: just show a count label
+        const fromSel = document.getElementById('bulkFrom');
+        const name = fromSel.options[fromSel.selectedIndex].text;
+        preview.innerHTML = '<div class="preview-label"><i class="fas fa-users"></i> All ongoing students in <strong>' + name + '</strong> will be moved.</div>';
+      } catch(e) {
+        preview.innerHTML = '<div class="preview-label">Students in selected class will be moved.</div>';
+      }
+    }
+
+    function confirmBulkMove() {
+      const from = document.getElementById('bulkFrom');
+      const to   = document.getElementById('bulkTo');
+      if (!from.value || !to.value) { alert('Please select both source and destination class.'); return false; }
+      if (from.value === to.value)  { alert('Source and destination class cannot be the same.'); return false; }
+      const fname = from.options[from.selectedIndex].text;
+      const tname = to.options[to.selectedIndex].text;
+      return confirm('Promote all ongoing students from "' + fname + '" → "' + tname + '"?\n\nThis cannot be undone.');
+    }
+
+    // ── Print ──
+    document.getElementById('printBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const params = new URLSearchParams(window.location.search);
+      params.delete('page');
+      window.open('/students/print?' + params.toString(), '_blank');
+    });
+
+    // ── Stream loader ──
+    async function loadStreams(classId, selectId) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Loading...</option>';
+      if (!classId) { sel.innerHTML = '<option value="">Select stream (optional)</option>'; return; }
+      const res = await fetch('/streams/by-class/' + classId);
+      const streams = await res.json();
+      sel.innerHTML = '<option value="">No specific stream</option>' + streams.map(s =>
+        '<option value="' + s.StmID + '">' + s.StmName + '</option>'
+      ).join('');
+    }

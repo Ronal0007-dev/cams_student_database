@@ -1,0 +1,84 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-stream
+      span Streams
+      span.count-badge= count
+    .page-actions
+      if role === 'admin'
+        a.btn.btn-primary(href="/streams/new")
+          i.fas.fa-plus
+          span Add Stream
+
+  form.filter-bar(method="GET" action="/streams")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search streams..." value=search || '')
+    .filter-group
+      select(name="classId")
+        option(value="") All Classes
+        each c in classes
+          option(value=c.ClassID selected=(classId == c.ClassID))= c.ClassName
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Search
+    if search || classId
+      a.btn.btn-ghost(href="/streams") Clear
+
+  .table-card
+    if streams.length === 0
+      .empty-state
+        i.fas.fa-stream
+        p No streams found
+        if role === 'admin'
+          a.btn.btn-primary(href="/streams/new") Add First Stream
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Stream Name
+              th Class
+              th Actions
+          tbody
+            each s, i in streams
+              tr
+                td.cell-num= (currentPage - 1) * 10 + i + 1
+                td
+                  .icon-cell
+                    i.fas.fa-stream
+                    span= s.StmName
+                td= s.Class ? s.Class.ClassName : '—'
+                td.actions-cell
+                  a.btn-icon.btn-edit(href=`/streams/${s.StmID}/edit` title="Edit")
+                    i.fas.fa-pen
+                  if role === 'admin'
+                    form(action=`/streams/${s.StmID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this stream?')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/streams?page=${currentPage - 1}&search=${search || ''}&classId=${classId || ''}`)
+              i.fas.fa-chevron-left
+          - let start = Math.max(1, currentPage - 2)
+          - let end = Math.min(totalPages, currentPage + 2)
+          if start > 1
+            a.page-btn(href=`/streams?page=1&search=${search || ''}&classId=${classId || ''}`) 1
+            if start > 2
+              span.page-ellipsis …
+          each n in Array.from({length: end - start + 1}, (_, i) => start + i)
+            a.page-btn(href=`/streams?page=${n}&search=${search || ''}&classId=${classId || ''}` class=(n === currentPage ? 'active' : ''))= n
+          if end < totalPages
+            if end < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/streams?page=${totalPages}&search=${search || ''}&classId=${classId || ''}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/streams?page=${currentPage + 1}&search=${search || ''}&classId=${classId || ''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * 10 + 1}–#{Math.min(currentPage * 10, count)} of #{count} streams

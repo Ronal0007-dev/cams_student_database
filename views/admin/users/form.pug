@@ -1,0 +1,48 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i(class=usr ? 'fas fa-user-edit' : 'fas fa-user-plus')
+      span= usr ? 'Edit User' : 'Create User'
+    .page-actions
+      a.btn.btn-ghost(href="/users")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card.form-sm
+    form(action=action method="POST" class="styled-form")
+      if usr
+        input(type="hidden" name="_method" value="PUT")
+      .form-row
+        .form-group.col-2
+          label(for="FullName") Full Name *
+          input#FullName(type="text" name="FullName" value=usr ? usr.FullName : '' placeholder="e.g. Jane Doe" required)
+        .form-group
+          label(for="Username") Username *
+          input#Username(type="text" name="Username" value=usr ? usr.Username : '' placeholder="e.g. jdoe" required)
+      .form-row
+        .form-group.col-2
+          label(for="Email") Email *
+          input#Email(type="email" name="Email" value=usr ? usr.Email : '' placeholder="user@school.ac.tz" required)
+        .form-group
+          label(for="Role") Role *
+          select#Role(name="Role" required)
+            option(value="viewer" selected=usr && usr.Role==='viewer') Viewer (read-only)
+            option(value="teacher" selected=usr && usr.Role==='teacher') Teacher
+            option(value="admin" selected=!usr || usr.Role==='admin') Admin
+      .form-row
+        .form-group
+          label(for="Password")= usr ? 'New Password (leave blank to keep)' : 'Password *'
+          input#Password(type="password" name="Password" placeholder="••••••••" autocomplete="new-password")
+        if usr
+          .form-group
+            label Active
+            .toggle-wrap
+              input#IsActive(type="checkbox" name="IsActive" checked=usr.IsActive)
+              label(for="IsActive").toggle-label Active account
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i.fas.fa-save
+          span= usr ? 'Update User' : 'Create User'
+        a.btn.btn-ghost(href="/users") Cancel

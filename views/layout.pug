@@ -1,0 +1,94 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= title || 'Student Management System'
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+    link(rel="stylesheet" href="/css/style.css")
+  body
+    if user
+      .layout
+        //- Sidebar
+        aside.sidebar#sidebar
+          .sidebar-brand
+            .brand-icon
+              i.fas.fa-graduation-cap
+            .brand-text
+              span.brand-name SMS
+              span.brand-sub School Manager
+
+          nav.sidebar-nav
+            .nav-section
+              span.nav-label Core
+              a.nav-item(href="/dashboard" class=(title && title.includes('Dashboard') ? 'active' : ''))
+                i.fas.fa-th-large
+                span Dashboard
+              a.nav-item(href="/students" class=(title && title.includes('Student') ? 'active' : ''))
+                i.fas.fa-user-graduate
+                span Students
+
+            .nav-section
+              span.nav-label Structure
+              a.nav-item(href="/departments" class=(title && title.includes('Department') ? 'active' : ''))
+                i.fas.fa-building-columns
+                span Departments
+              a.nav-item(href="/classes" class=(title && title.includes('Class') ? 'active' : ''))
+                i.fas.fa-chalkboard
+                span Classes
+              a.nav-item(href="/streams" class=(title && title.includes('Stream') ? 'active' : ''))
+                i.fas.fa-stream
+                span Streams
+
+            if role === 'admin'
+              .nav-section
+                span.nav-label Admin
+                a.nav-item(href="/users" class=(title && title.includes('User') ? 'active' : ''))
+                  i.fas.fa-users-cog
+                  span Users
+
+          .sidebar-footer
+            .user-info
+              .user-avatar= user.name.charAt(0).toUpperCase()
+              .user-details
+                span.user-name= user.name
+                span.user-role= role
+            //- Theme Toggle
+            button.theme-toggle#themeToggle(title="Toggle Light/Dark Mode")
+              i.fas.fa-moon#themeIcon
+            a.logout-btn(href="/auth/logout" title="Logout")
+              i.fas.fa-sign-out-alt
+
+        //- Main Content
+        .main-content
+          header.topbar
+            button.sidebar-toggle#sidebarToggle
+              i.fas.fa-bars
+            .topbar-title= title || ''
+            .topbar-actions
+              span.topbar-date
+                i.fas.fa-calendar-alt
+                span#currentDate
+
+          .content-area
+            if success && success.length
+              .alert.alert-success
+                i.fas.fa-check-circle
+                span= success[0]
+                button.alert-close(onclick="this.parentElement.remove()") ×
+            if error && error.length
+              .alert.alert-error
+                i.fas.fa-exclamation-circle
+                span= error[0]
+                button.alert-close(onclick="this.parentElement.remove()") ×
+
+            block content
+    else
+      block content
+
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js")
+    script(src="/js/app.js")
+    block scripts
