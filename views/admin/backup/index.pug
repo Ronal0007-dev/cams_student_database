@@ -1,0 +1,152 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-database
+      span Database Backup
+    .page-actions
+      form(action="/backup/run" method="POST" style="display:inline")
+        button.btn.btn-primary#runBackupBtn(type="submit" onclick="return confirmBackup()")
+          i.fas.fa-play
+          span Run Backup Now
+
+  //- ── Config Cards ──
+  .backup-config-grid
+    .backup-config-card
+      .bcc-icon
+        i.fas.fa-database
+      .bcc-body
+        .bcc-label Database
+        .bcc-value= config.DB_NAME
+        .bcc-sub= config.DB_HOST
+    .backup-config-card
+      .bcc-icon
+        i.fas.fa-envelope
+      .bcc-body
+        .bcc-label Send To
+        .bcc-value= config.EMAIL_TO
+        .bcc-sub= config.SMTP_USER
+    .backup-config-card
+      .bcc-icon
+        i.fas.fa-clock
+      .bcc-body
+        .bcc-label Schedule
+        .bcc-value Every 7 Days
+        .bcc-sub= config.SCHEDULE
+    .backup-config-card
+      .bcc-icon
+        i.fas.fa-trash-clock
+      .bcc-body
+        .bcc-label Retention
+        .bcc-value= config.RETENTION + ' days'
+        .bcc-sub Local files only
+
+  //- ── mysqldump path tip ──
+  .setup-alert.setup-alert-info
+    .setup-alert-header
+      i.fas.fa-info-circle
+      span Backup Method — mysqldump auto-detection
+    .setup-steps
+      .setup-step
+        .step-num
+          i.fas.fa-search
+        .step-body
+          strong The system auto-detects mysqldump in common locations (XAMPP, WAMP, Laragon, MySQL Installer).
+          p If mysqldump is not found it uses a built-in Node.js SQL exporter as fallback — backups will still work.
+          p To force mysqldump, add its folder to your system PATH or set <code>MYSQLDUMP_PATH</code> in <code>.env</code>:
+          pre MYSQLDUMP_PATH=C:\xampp\mysql\bin\mysqldump.exe
+
+  //- ── Setup Instructions (shown if email not configured) ──
+  if config.SMTP_USER === '(not set)'
+    .setup-alert
+      .setup-alert-header
+        i.fas.fa-exclamation-triangle
+        span Email not configured — backups will run but not be emailed
+      .setup-steps
+        .setup-step
+          .step-num 1
+          .step-body
+            strong Open your <code>.env</code> file and set:
+            pre.
+              SMTP_HOST=smtp.gmail.com
+              SMTP_PORT=587
+              SMTP_USER=yourschool@gmail.com
+              SMTP_PASS=your-app-password
+              BACKUP_EMAIL_TO=admin@school.ac.tz
+        .setup-step
+          .step-num 2
+          .step-body
+            strong For Gmail — generate an App Password:
+            p Go to <strong>Google Account → Security → 2-Step Verification → App Passwords</strong>, generate one, and use it as <code>SMTP_PASS</code>.
+        .setup-step
+          .step-num 3
+          .step-body
+            strong Restart the server after saving <code>.env</code>.
+
+  //- ── Backup Files Table ──
+  .section-heading
+    i.fas.fa-archive
+    span Backup Files
+    span.count-badge= files.length
+
+  .table-card
+    if files.length === 0
+      .empty-state
+        i.fas.fa-database
+        p No backups yet — run your first backup above
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th # 
+              th File Name
+              th Size
+              th Created
+              th Actions
+          tbody
+            each f, i in files
+              tr
+                td.cell-num= i + 1
+                td
+                  .icon-cell
+                    i.fas.fa-file-zipper(style="color:var(--amber)")
+                    span.file-name-mono= f.name
+                td= f.size
+                td= f.created
+                td.actions-cell
+                  a.btn-icon.btn-view(href=`/backup/download/${f.name}` title="Download" download)
+                    i.fas.fa-download
+                  form(action=`/backup/${f.name}?_method=DELETE` method="POST" style="display:inline")
+                    button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this backup file?')" title="Delete")
+                      i.fas.fa-trash
+
+  //- ── Backup Log ──
+  .section-heading
+    i.fas.fa-scroll
+    span Recent Log
+    button.btn.btn-ghost.btn-sm#toggleLog(onclick="toggleLog()" style="margin-left:auto")
+      i.fas.fa-chevron-down#logChevron
+      span Show Log
+
+  #logBlock.log-block(style="display:none")
+    if logs.length === 0
+      p.log-empty No log entries yet.
+    else
+      each line in logs
+        .log-line(class=line.includes('❌') ? 'log-error' : line.includes('✅') || line.includes('📧') ? 'log-success' : line.includes('⚠') ? 'log-warn' : '')= line
+
+block scripts
+  script.
+    function confirmBackup() {
+      return confirm('Run a database backup now?\n\nThis will dump the database, compress it, and email it to the configured address.');
+    }
+    function toggleLog() {
+      const block   = document.getElementById('logBlock');
+      const chevron = document.getElementById('logChevron');
+      const btn     = document.getElementById('toggleLog');
+      const open    = block.style.display === 'none';
+      block.style.display  = open ? 'block' : 'none';
+      chevron.className    = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+    }

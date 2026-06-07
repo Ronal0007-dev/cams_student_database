@@ -1,13 +1,14 @@
 require('dotenv').config();
-const express = require('express');
-const session = require('express-session');
-const flash = require('connect-flash');
+const express       = require('express');
+const session       = require('express-session');
+const flash         = require('connect-flash');
 const methodOverride = require('method-override');
-const path = require('path');
+const path          = require('path');
 
-const { sequelize } = require('./models');
-const { setLocals } = require('./middleware/auth');
+const { sequelize }  = require('./models');
+const { setLocals }  = require('./middleware/auth');
 const { isAuthenticated } = require('./middleware/auth');
+const { startScheduler }  = require('./services/backup');
 
 const app = express();
 
@@ -30,23 +31,24 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'sms_secret_2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24h
+  cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
 // Flash
 app.use(flash());
 
-// Set locals for all views
+// Set locals
 app.use(setLocals);
 
 // Routes
-app.use('/auth', require('./routes/auth'));
-app.use('/dashboard', isAuthenticated, require('./routes/dashboard'));
-app.use('/students', isAuthenticated, require('./routes/students'));
+app.use('/auth',        require('./routes/auth'));
+app.use('/dashboard',   isAuthenticated, require('./routes/dashboard'));
+app.use('/students',    isAuthenticated, require('./routes/students'));
 app.use('/departments', isAuthenticated, require('./routes/departments'));
-app.use('/classes', isAuthenticated, require('./routes/classes'));
-app.use('/streams', isAuthenticated, require('./routes/streams'));
-app.use('/users', isAuthenticated, require('./routes/users'));
+app.use('/classes',     isAuthenticated, require('./routes/classes'));
+app.use('/streams',     isAuthenticated, require('./routes/streams'));
+app.use('/users',       isAuthenticated, require('./routes/users'));
+app.use('/backup',      isAuthenticated, require('./routes/backup'));
 
 // Root redirect
 app.get('/', (req, res) => {
@@ -56,7 +58,7 @@ app.get('/', (req, res) => {
 
 // 404
 app.use((req, res) => {
-  res.status(404).render('auth/login', { title: 'Not Found' });
+  res.status(404).redirect('/auth/login');
 });
 
 // Error handler
@@ -65,36 +67,39 @@ app.use((err, req, res, next) => {
   res.status(500).send('Internal Server Error');
 });
 
-// Start
+// ── Start ──
 const PORT = process.env.PORT || 3000;
 
 async function start() {
   try {
     await sequelize.authenticate();
     console.log('✅ Database connected');
-    
-    // Sync tables (alter: safe for existing data)
+
     await sequelize.sync({ alter: true });
     console.log('✅ Tables synced');
-    
-    // Create default admin if none exists
+
+    // Seed default admin
     const { User } = require('./models');
     const adminCount = await User.count({ where: { Role: 'admin' } });
     if (adminCount === 0) {
       await User.create({
         FullName: 'System Administrator',
         Username: 'admin',
-        Email: 'admin@school.ac.tz',
+        Email:    'admin@school.ac.tz',
         Password: 'admin123',
-        Role: 'admin'
+        Role:     'admin'
       });
       console.log('✅ Default admin created: admin / admin123');
     }
-    
+
     app.listen(PORT, () => {
       console.log(`🚀 SMS running at http://localhost:${PORT}`);
-      console.log(`   Default login: admin / admin123`);
+      console.log(`   Login: admin / admin123`);
     });
+
+    // Start automatic backup scheduler
+    startScheduler();
+
   } catch (err) {
     console.error('❌ Startup error:', err);
     process.exit(1);
@@ -102,5 +107,4 @@ async function start() {
 }
 
 start();
-
 module.exports = app;

@@ -19,7 +19,7 @@ html(lang="en")
               i.fas.fa-graduation-cap
             .brand-text
               span.brand-name SMS
-              span.brand-sub School Administration
+              span.brand-sub School Manager
 
           nav.sidebar-nav
             .nav-section
@@ -49,6 +49,9 @@ html(lang="en")
                 a.nav-item(href="/users" class=(title && title.includes('User') ? 'active' : ''))
                   i.fas.fa-users-cog
                   span Users
+                a.nav-item(href="/backup" class=(title && title.includes('Backup') ? 'active' : ''))
+                  i.fas.fa-database
+                  span DB Backup
 
           .sidebar-footer
             .user-info

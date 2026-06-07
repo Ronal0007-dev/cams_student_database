@@ -1,0 +1,20 @@
+[2026-06-07T06:04:48.897Z] 💾 Running mysqldump → student_management_2026-06-07_09-04-48.sql
+[2026-06-07T06:04:49.100Z] ❌ Backup FAILED: mysqldump failed: 'mysqldump' is not recognized as an internal or external command,
+operable program or batch file.
+
+[2026-06-07T06:04:49.103Z] ═══════════════════════════════════════
+[2026-06-07T06:04:54.022Z] 📧 Failure alert email sent
+[2026-06-07T06:12:10.488Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-07T06:12:10.490Z]    Backup email → kallagiga0@gmail.com
+[2026-06-07T06:12:10.493Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-07T06:12:10.495Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-07T06:15:31.437Z] ═══════════════════════════════════════════
+[2026-06-07T06:15:31.439Z] 🚀 Starting database backup — student_management
+[2026-06-07T06:15:31.442Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-07T06:15:31.445Z] 💾 Dumping with mysqldump → student_management_2026-06-07_09-15-31.sql
+[2026-06-07T06:15:33.268Z] ✅ Dump complete — raw size: 11.1 KB
+[2026-06-07T06:15:33.270Z] 🗜  Compressing…
+[2026-06-07T06:15:33.289Z] ✅ Compressed → student_management_2026-06-07_09-15-31.sql.gz (2.6 KB, 77% smaller)
+[2026-06-07T06:15:37.707Z] 📧 Backup email sent to kallagiga0@gmail.com
+[2026-06-07T06:15:37.712Z] ✅ Backup completed successfully
+[2026-06-07T06:15:37.714Z] ═══════════════════════════════════════════
