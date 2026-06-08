@@ -18,3 +18,11 @@ operable program or batch file.
 [2026-06-07T06:15:37.707Z] 📧 Backup email sent to kallagiga0@gmail.com
 [2026-06-07T06:15:37.712Z] ✅ Backup completed successfully
 [2026-06-07T06:15:37.714Z] ═══════════════════════════════════════════
+[2026-06-08T04:43:52.550Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-08T04:43:52.551Z]    Backup email → kallagiga0@gmail.com
+[2026-06-08T04:43:52.552Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-08T04:43:52.553Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-08T04:53:38.569Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-08T04:53:38.571Z]    Backup email → kallagiga0@gmail.com
+[2026-06-08T04:53:38.573Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-08T04:53:38.575Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe

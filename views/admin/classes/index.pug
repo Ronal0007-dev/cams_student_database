@@ -43,27 +43,42 @@ block content
               th Class Name
               th Department
               th Streams
-              th Students
+              th.th-center Total
+              th.th-center Boys
+              th.th-center Girls
               th Level
               th Actions
           tbody
             each c, i in classes
+              - const boys  = c.Students ? c.Students.filter(s => s.Gender === 'Male').length   : 0
+              - const girls = c.Students ? c.Students.filter(s => s.Gender === 'Female').length : 0
+              - const total = c.Students ? c.Students.length : 0
               tr
                 td.cell-num= (currentPage - 1) * 10 + i + 1
                 td
-                  .icon-cell
+                  a.class-name-link(href=`/classes/${c.ClassID}/view`)
                     i.fas.fa-chalkboard
                     span= c.ClassName
                 td= c.Department ? c.Department.DeptName : '—'
                 td
                   span.count-chip= c.Streams ? c.Streams.length : 0
-                td
-                  span.count-chip= c.Students ? c.Students.length : 0
+                td.td-center
+                  span.count-chip= total
+                td.td-center
+                  span.gender-chip.chip-boy
+                    i.fas.fa-mars
+                    = boys
+                td.td-center
+                  span.gender-chip.chip-girl
+                    i.fas.fa-venus
+                    = girls
                 td= c.Level || 1
                 td.actions-cell
-                  a.btn-icon.btn-edit(href=`/classes/${c.ClassID}/edit` title="Edit")
-                    i.fas.fa-pen
+                  a.btn-icon.btn-view(href=`/classes/${c.ClassID}/view` title="View Students")
+                    i.fas.fa-eye
                   if role === 'admin'
+                    a.btn-icon.btn-edit(href=`/classes/${c.ClassID}/edit` title="Edit")
+                      i.fas.fa-pen
                     form(action=`/classes/${c.ClassID}?_method=DELETE` method="POST" style="display:inline")
                       button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this class?')" title="Delete")
                         i.fas.fa-trash

@@ -1,0 +1,199 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-chalkboard
+      span= cls.ClassName
+      if cls.Department
+        span.dept-tag= cls.Department.DeptName
+    .page-actions
+      a.btn.btn-ghost(href="/classes")
+        i.fas.fa-arrow-left
+        span Back
+      a.btn.btn-secondary(href=`/students?classId=${cls.ClassID}`)
+        i.fas.fa-external-link-alt
+        span Full Student View
+      if role !== 'viewer'
+        a.btn.btn-primary(href=`/students/new`)
+          i.fas.fa-user-plus
+          span Add Student
+
+  //- ── Stat Cards ──
+  .class-stats-grid
+    .cstat-card.cstat-total
+      .cstat-icon
+        i.fas.fa-users
+      .cstat-body
+        span.cstat-label Total Students
+        span.cstat-value= stats.totalStudents
+    .cstat-card.cstat-boys
+      .cstat-icon
+        i.fas.fa-mars
+      .cstat-body
+        span.cstat-label Boys
+        span.cstat-value= stats.totalBoys
+        span.cstat-pct= stats.totalStudents ? Math.round(stats.totalBoys / stats.totalStudents * 100) + '%' : '0%'
+    .cstat-card.cstat-girls
+      .cstat-icon
+        i.fas.fa-venus
+      .cstat-body
+        span.cstat-label Girls
+        span.cstat-value= stats.totalGirls
+        span.cstat-pct= stats.totalStudents ? Math.round(stats.totalGirls / stats.totalStudents * 100) + '%' : '0%'
+    .cstat-card.cstat-ongoing
+      .cstat-icon
+        i.fas.fa-user-check
+      .cstat-body
+        span.cstat-label Ongoing
+        span.cstat-value= stats.totalOngoing
+    .cstat-card.cstat-done
+      .cstat-icon
+        i.fas.fa-graduation-cap
+      .cstat-body
+        span.cstat-label Completed
+        span.cstat-value= stats.totalCompleted
+    .cstat-card.cstat-transfer
+      .cstat-icon
+        i.fas.fa-exchange-alt
+      .cstat-body
+        span.cstat-label Transferred
+        span.cstat-value= stats.totalTransferred
+
+  //- ── Gender Progress Bar ──
+  if stats.totalStudents > 0
+    .gender-bar-card
+      .gender-bar-label
+        .gbl-item
+          span.gbl-dot.gbl-dot-boy
+          span Boys — #{stats.totalBoys} (#{Math.round(stats.totalBoys / stats.totalStudents * 100)}%)
+        .gbl-item
+          span.gbl-dot.gbl-dot-girl
+          span Girls — #{stats.totalGirls} (#{Math.round(stats.totalGirls / stats.totalStudents * 100)}%)
+      .gender-bar-track
+        .gender-bar-fill.gender-bar-boy(style=`width:${Math.round(stats.totalBoys / stats.totalStudents * 100)}%`)
+        .gender-bar-fill.gender-bar-girl(style=`width:${Math.round(stats.totalGirls / stats.totalStudents * 100)}%`)
+
+  //- ── Class Info ──
+  .class-meta-row
+    .class-meta-item
+      i.fas.fa-building-columns
+      span Department:&nbsp;
+      strong= cls.Department ? cls.Department.DeptName : '—'
+    .class-meta-item
+      i.fas.fa-layer-group
+      span Level:&nbsp;
+      strong= cls.Level || 1
+    .class-meta-item
+      i.fas.fa-stream
+      span Streams:&nbsp;
+      strong= cls.Streams ? cls.Streams.length : 0
+      if cls.Streams && cls.Streams.length
+        span.stream-list= ' (' + cls.Streams.map(s => s.StmName).join(', ') + ')'
+
+  //- ── Student Filters ──
+  form.filter-bar(method="GET" action=`/classes/${cls.ClassID}/view`)
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search students..." value=query.search || '')
+    if cls.Streams && cls.Streams.length
+      .filter-group
+        select(name="stmId" onchange="this.form.submit()")
+          option(value="") All Streams
+          each s in cls.Streams
+            option(value=s.StmID selected=(query.stmId == s.StmID))= s.StmName
+    .filter-group
+      select(name="gender" onchange="this.form.submit()")
+        option(value="") All Gender
+        option(value="Male"   selected=(query.gender==='Male'))   Boys Only
+        option(value="Female" selected=(query.gender==='Female')) Girls Only
+    .filter-group
+      select(name="status" onchange="this.form.submit()")
+        option(value="") All Status
+        option(value="Ongoing"     selected=(query.status==='Ongoing'))     Ongoing
+        option(value="Completed"   selected=(query.status==='Completed'))   Completed
+        option(value="Transferred" selected=(query.status==='Transferred')) Transferred
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Filter
+    if query.search || query.gender || query.status || query.stmId
+      a.btn.btn-ghost(href=`/classes/${cls.ClassID}/view`) Clear
+
+  //- ── Student Table ──
+  .table-card
+    .table-card-header
+      span
+        i.fas.fa-users
+        | &nbsp;Students
+        if query.search || query.gender || query.status || query.stmId
+          span.filtered-label &nbsp;(filtered: #{filteredCount})
+        else
+          span.filtered-label &nbsp;(#{filteredCount} total)
+    if students.length === 0
+      .empty-state
+        i.fas.fa-user-slash
+        p No students match your filter
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Student Name
+              th Adm. No
+              th Stream
+              th Gender
+              th Status
+              th Parent Phone
+              th Actions
+          tbody
+            each s, i in students
+              tr
+                td.cell-num= (currentPage - 1) * pageSize + i + 1
+                td
+                  .student-cell
+                    .mini-avatar(class=s.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+                      = s.StudentFullName.charAt(0)
+                    span= s.StudentFullName
+                td
+                  code.mono= s.AdmissionNumber || '—'
+                td= s.Stream ? s.Stream.StmName : '—'
+                td
+                  span.gender-badge(class=s.Gender === 'Male' ? 'gender-m' : 'gender-f')
+                    i(class=s.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+                    = ' ' + s.Gender
+                td
+                  span.status-pill(class=`status-${s.Status.toLowerCase()}`)= s.Status
+                td
+                  if s.ParentPhone
+                    a.contact-link(href=`tel:${s.ParentPhone}` title=s.ParentPhone)
+                      i.fas.fa-phone
+                td.actions-cell
+                  a.btn-icon.btn-view(href=`/students/${s.StudentID}` title="View Profile")
+                    i.fas.fa-eye
+                  if role !== 'viewer'
+                    a.btn-icon.btn-edit(href=`/students/${s.StudentID}/edit` title="Edit")
+                      i.fas.fa-pen
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/classes/${cls.ClassID}/view?page=${currentPage - 1}&search=${query.search||''}&gender=${query.gender||''}&status=${query.status||''}&stmId=${query.stmId||''}`)
+              i.fas.fa-chevron-left
+          - let ps = Math.max(1, currentPage - 2)
+          - let pe = Math.min(totalPages, currentPage + 2)
+          if ps > 1
+            a.page-btn(href=`/classes/${cls.ClassID}/view?page=1`) 1
+            if ps > 2
+              span.page-ellipsis …
+          each n in Array.from({length: pe - ps + 1}, (_, i) => ps + i)
+            a.page-btn(href=`/classes/${cls.ClassID}/view?page=${n}&search=${query.search||''}&gender=${query.gender||''}&status=${query.status||''}&stmId=${query.stmId||''}` class=(n === currentPage ? 'active' : ''))= n
+          if pe < totalPages
+            if pe < totalPages - 1
+              span.page-ellipsis …
+            a.page-btn(href=`/classes/${cls.ClassID}/view?page=${totalPages}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/classes/${cls.ClassID}/view?page=${currentPage + 1}&search=${query.search||''}&gender=${query.gender||''}&status=${query.status||''}&stmId=${query.stmId||''}`)
+              i.fas.fa-chevron-right
+
+        .pagination-info Showing #{(currentPage - 1) * pageSize + 1}–#{Math.min(currentPage * pageSize, filteredCount)} of #{filteredCount} students

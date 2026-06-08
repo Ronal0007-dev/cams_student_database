@@ -1,0 +1,142 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-building-columns
+      span= dept.DeptName
+    .page-actions
+      a.btn.btn-ghost(href="/departments")
+        i.fas.fa-arrow-left
+        span Back
+      if role === 'admin'
+        a.btn.btn-secondary(href=`/departments/${dept.DeptID}/edit`)
+          i.fas.fa-pen
+          span Edit
+
+  //- ── Department Summary Stats ──
+  .class-stats-grid
+    .cstat-card.cstat-total
+      .cstat-icon
+        i.fas.fa-users
+      .cstat-body
+        span.cstat-label Total Students
+        span.cstat-value= deptStats.total
+    .cstat-card.cstat-boys
+      .cstat-icon
+        i.fas.fa-mars
+      .cstat-body
+        span.cstat-label Boys
+        span.cstat-value= deptStats.boys
+        span.cstat-pct= deptStats.total ? Math.round(deptStats.boys / deptStats.total * 100) + '%' : '0%'
+    .cstat-card.cstat-girls
+      .cstat-icon
+        i.fas.fa-venus
+      .cstat-body
+        span.cstat-label Girls
+        span.cstat-value= deptStats.girls
+        span.cstat-pct= deptStats.total ? Math.round(deptStats.girls / deptStats.total * 100) + '%' : '0%'
+    .cstat-card.cstat-ongoing
+      .cstat-icon
+        i.fas.fa-user-check
+      .cstat-body
+        span.cstat-label Ongoing
+        span.cstat-value= deptStats.ongoing
+    .cstat-card.cstat-done
+      .cstat-icon
+        i.fas.fa-graduation-cap
+      .cstat-body
+        span.cstat-label Completed
+        span.cstat-value= deptStats.completed
+    .cstat-card.cstat-transfer
+      .cstat-icon
+        i.fas.fa-exchange-alt
+      .cstat-body
+        span.cstat-label Transferred
+        span.cstat-value= deptStats.transferred
+
+  //- ── Department gender bar ──
+  if deptStats.total > 0
+    .gender-bar-card
+      .gender-bar-label
+        .gbl-item
+          span.gbl-dot.gbl-dot-boy
+          span Boys — #{deptStats.boys} (#{Math.round(deptStats.boys / deptStats.total * 100)}%)
+        .gbl-item
+          span.gbl-dot.gbl-dot-girl
+          span Girls — #{deptStats.girls} (#{Math.round(deptStats.girls / deptStats.total * 100)}%)
+      .gender-bar-track
+        .gender-bar-fill.gender-bar-boy(style=`width:${Math.round(deptStats.boys / deptStats.total * 100)}%`)
+        .gender-bar-fill.gender-bar-girl(style=`width:${Math.round(deptStats.girls / deptStats.total * 100)}%`)
+
+  //- ── Description ──
+  if dept.Description
+    .dept-description
+      i.fas.fa-info-circle
+      span= dept.Description
+
+  //- ── Classes breakdown ──
+  .section-heading
+    i.fas.fa-chalkboard
+    span Classes in #{dept.DeptName}
+    span.count-badge= classStats.length
+
+  if classStats.length === 0
+    .table-card
+      .empty-state
+        i.fas.fa-chalkboard
+        p No classes in this department yet
+        if role === 'admin'
+          a.btn.btn-primary(href="/classes/new") Add Class
+  else
+    .dept-classes-grid
+      each item in classStats
+        .dept-class-card
+          .dcc-header
+            .dcc-title
+              i.fas.fa-chalkboard
+              a.dcc-link(href=`/classes/${item.cls.ClassID}/view`)= item.cls.ClassName
+            .dcc-total
+              span.count-chip= item.total
+              span students
+
+          //- Gender mini bar
+          if item.total > 0
+            .dcc-gender-bar
+              .dcc-bar-boy(style=`width:${Math.round(item.boys / item.total * 100)}%` title=`Boys: ${item.boys}`)
+              .dcc-bar-girl(style=`width:${Math.round(item.girls / item.total * 100)}%` title=`Girls: ${item.girls}`)
+          else
+            .dcc-gender-bar
+              .dcc-bar-empty No students yet
+
+          .dcc-stats
+            .dcc-stat
+              span.dcc-stat-icon.stat-boy
+                i.fas.fa-mars
+              span.dcc-stat-val= item.boys
+              span.dcc-stat-label Boys
+            .dcc-stat
+              span.dcc-stat-icon.stat-girl
+                i.fas.fa-venus
+              span.dcc-stat-val= item.girls
+              span.dcc-stat-label Girls
+            .dcc-stat
+              span.dcc-stat-icon.stat-stream
+                i.fas.fa-stream
+              span.dcc-stat-val= item.cls.Streams ? item.cls.Streams.length : 0
+              span.dcc-stat-label Streams
+
+          .dcc-status-row
+            span.status-pill.status-ongoing= item.ongoing + ' Ongoing'
+            if item.completed > 0
+              span.status-pill.status-completed= item.completed + ' Completed'
+            if item.transferred > 0
+              span.status-pill.status-transferred= item.transferred + ' Transferred'
+
+          .dcc-footer
+            a.btn.btn-secondary.btn-sm(href=`/classes/${item.cls.ClassID}/view`)
+              i.fas.fa-eye
+              span View Class
+            a.btn.btn-ghost.btn-sm(href=`/students?classId=${item.cls.ClassID}`)
+              i.fas.fa-users
+              span All Students

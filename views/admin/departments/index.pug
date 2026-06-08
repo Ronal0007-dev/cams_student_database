@@ -38,22 +38,28 @@ block content
               th Department Name
               th Description
               th Classes
+              th.th-center Total Students
               th Actions
           tbody
             each d, i in departments
+              - const totalStudents = d.Classes ? d.Classes.reduce((sum, c) => sum + (c.Students ? c.Students.length : 0), 0) : 0
               tr
                 td.cell-num= (currentPage - 1) * 10 + i + 1
                 td
-                  .icon-cell
+                  a.class-name-link(href=`/departments/${d.DeptID}/view`)
                     i.fas.fa-building-columns
                     span= d.DeptName
                 td= d.Description || '—'
                 td
                   span.count-chip= d.Classes ? d.Classes.length : 0
+                td.td-center
+                  span.count-chip= totalStudents
                 td.actions-cell
-                  a.btn-icon.btn-edit(href=`/departments/${d.DeptID}/edit` title="Edit")
-                    i.fas.fa-pen
+                  a.btn-icon.btn-view(href=`/departments/${d.DeptID}/view` title="View Department")
+                    i.fas.fa-eye
                   if role === 'admin'
+                    a.btn-icon.btn-edit(href=`/departments/${d.DeptID}/edit` title="Edit")
+                      i.fas.fa-pen
                     form(action=`/departments/${d.DeptID}?_method=DELETE` method="POST" style="display:inline")
                       button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this department?')" title="Delete")
                         i.fas.fa-trash
