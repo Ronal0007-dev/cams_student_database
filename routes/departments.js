@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
       where,
       include: [{
         model: Class, as: 'Classes',
-        include: [{ model: Student, as: 'Students', attributes: ['StudentID'] }]
+        include: [{ model: Student, as: 'Students', attributes: ['StudentID'], where: { Status: 'Ongoing' }, required: false }]
       }],
       order:  [['DeptName','ASC']],
       limit:  PAGE_SIZE,
@@ -47,7 +47,7 @@ router.get('/:id/view', async (req, res) => {
         model: Class, as: 'Classes',
         include: [
           { model: Stream,  as: 'Streams' },
-          { model: Student, as: 'Students', attributes: ['StudentID','Gender','Status'] }
+          { model: Student, as: 'Students', attributes: ['StudentID','Gender','Status'], where: { Status: 'Ongoing' }, required: false }
         ],
         order: [['Level','ASC'],['ClassName','ASC']]
       }]
@@ -56,28 +56,24 @@ router.get('/:id/view', async (req, res) => {
 
     // Compute per-class and department totals
     let deptTotal = 0, deptBoys = 0, deptGirls = 0;
-    let deptOngoing = 0, deptCompleted = 0, deptTransferred = 0;
+    let deptOngoing = 0;
 
     const classStats = (dept.Classes || []).map(cls => {
       const students = cls.Students || [];
-      const boys        = students.filter(s => s.Gender === 'Male').length;
-      const girls       = students.filter(s => s.Gender === 'Female').length;
-      const ongoing     = students.filter(s => s.Status === 'Ongoing').length;
-      const completed   = students.filter(s => s.Status === 'Completed').length;
-      const transferred = students.filter(s => s.Status === 'Transferred').length;
-      deptTotal       += students.length;
-      deptBoys        += boys;
-      deptGirls       += girls;
-      deptOngoing     += ongoing;
-      deptCompleted   += completed;
-      deptTransferred += transferred;
-      return { cls, total: students.length, boys, girls, ongoing, completed, transferred };
+      const boys    = students.filter(s => s.Gender === 'Male').length;
+      const girls   = students.filter(s => s.Gender === 'Female').length;
+      const ongoing = students.length; // all loaded are Ongoing
+      deptTotal   += students.length;
+      deptBoys    += boys;
+      deptGirls   += girls;
+      deptOngoing += ongoing;
+      return { cls, total: students.length, boys, girls, ongoing, completed: 0, transferred: 0 };
     });
 
     res.render('admin/departments/view', {
       title: `${dept.DeptName} — Department`,
       dept, classStats,
-      deptStats: { total: deptTotal, boys: deptBoys, girls: deptGirls, ongoing: deptOngoing, completed: deptCompleted, transferred: deptTransferred }
+      deptStats: { total: deptTotal, boys: deptBoys, girls: deptGirls, ongoing: deptOngoing, completed: 0, transferred: 0 }
     });
   } catch (err) {
     console.error(err);

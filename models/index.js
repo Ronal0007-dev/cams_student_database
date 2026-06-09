@@ -1,10 +1,11 @@
-const sequelize  = require('../config/database');
-const Department = require('./Department');
-const Class      = require('./Class');
-const Stream     = require('./Stream');
-const Student    = require('./Student');
-const User       = require('./User');
-const Graduated  = require('./Graduated');
+const sequelize   = require('../config/database');
+const Department  = require('./Department');
+const Class       = require('./Class');
+const Stream      = require('./Stream');
+const Student     = require('./Student');
+const User        = require('./User');
+const Graduated   = require('./Graduated');
+const Transferred = require('./Transferred');
 
 // Department -> Class
 Department.hasMany(Class, { foreignKey: 'DeptID', as: 'Classes' });
@@ -22,7 +23,6 @@ Student.belongsTo(Class, { foreignKey: 'ClassID', as: 'Class' });
 Stream.hasMany(Student, { foreignKey: 'StmID', as: 'Students' });
 Student.belongsTo(Stream, { foreignKey: 'StmID', as: 'Stream' });
 
-// Graduated — standalone table, no FK constraints to avoid cascades
-// StudentID is just a reference field, not an FK
+// Graduated & Transferred — standalone tables (no FK constraints)
 
-module.exports = { sequelize, Department, Class, Stream, Student, User, Graduated };
+module.exports = { sequelize, Department, Class, Stream, Student, User, Graduated, Transferred };

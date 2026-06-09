@@ -1,23 +1,22 @@
 const express    = require('express');
 const router     = express.Router();
-const { Student, Class, Department, Stream, Graduated } = require('../models');
+const { Student, Class, Stream, Graduated, Transferred } = require('../models');
 const sequelize  = require('../config/database');
 
 router.get('/', async (req, res) => {
   try {
-    // Active students = NOT Completed (Completed ones live in graduated table)
-    const ACTIVE = { Status: ['Ongoing', 'Transferred'] };
+    // Only Ongoing students are "active" — Completed→graduated, Transferred→transferred tables
+    const ONGOING = { Status: 'Ongoing' };
 
-    const [totalStudents, boys, girls, ongoing, transferred, totalGraduated] = await Promise.all([
-      Student.count({ where: ACTIVE }),
-      Student.count({ where: { ...ACTIVE, Gender: 'Male'   } }),
-      Student.count({ where: { ...ACTIVE, Gender: 'Female' } }),
-      Student.count({ where: { Status: 'Ongoing'     } }),
-      Student.count({ where: { Status: 'Transferred' } }),
-      Graduated.count()
+    const [totalStudents, boys, girls, totalGraduated, totalTransferred] = await Promise.all([
+      Student.count({ where: ONGOING }),
+      Student.count({ where: { ...ONGOING, Gender: 'Male'   } }),
+      Student.count({ where: { ...ONGOING, Gender: 'Female' } }),
+      Graduated.count(),
+      Transferred.count()
     ]);
 
-    // Students by class for bar chart (exclude Completed)
+    // Bar chart — ongoing students per class only
     const studentsByClass = await Class.findAll({
       attributes: [
         'ClassID', 'ClassName',
@@ -25,26 +24,25 @@ router.get('/', async (req, res) => {
       ],
       include: [{
         model: Student, as: 'Students', attributes: [],
-        where: ACTIVE, required: false
+        where: ONGOING, required: false
       }],
       group: ['Class.ClassID'],
-      order: [['ClassName', 'ASC']]
+      order: [['ClassName','ASC']]
     });
 
-    // Recent students (active only)
+    // Recent active students
     const recentStudents = await Student.findAll({
-      where: ACTIVE,
+      where: ONGOING,
       include: [
         { model: Class,  as: 'Class',  attributes: ['ClassName'] },
         { model: Stream, as: 'Stream', attributes: ['StmName']  }
       ],
-      order: [['createdAt', 'DESC']],
-      limit: 5
+      order: [['createdAt','DESC']], limit: 5
     });
 
     res.render('admin/dashboard', {
       title: 'Dashboard — SMS',
-      stats: { totalStudents, boys, girls, ongoing, transferred, totalGraduated },
+      stats: { totalStudents, boys, girls, totalGraduated, totalTransferred },
       studentsByClass: JSON.stringify(studentsByClass.map(c => ({
         name: c.ClassName,
         count: parseInt(c.dataValues.studentCount)
@@ -53,8 +51,8 @@ router.get('/', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Failed to load dashboard');
-    res.render('admin/dashboard', { title: 'Dashboard', stats: {}, studentsByClass: '[]', recentStudents: [] });
+    req.flash('error','Failed to load dashboard');
+    res.render('admin/dashboard', { title:'Dashboard', stats:{}, studentsByClass:'[]', recentStudents:[] });
   }
 });
 

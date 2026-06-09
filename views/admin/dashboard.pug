@@ -50,8 +50,8 @@ block content
         i.fas.fa-exchange-alt
       .stat-info
         span.stat-label Transferred
-        span.stat-value= stats.transferred || 0
-        span.stat-sub Moved schools
+        span.stat-value= stats.totalTransferred || 0
+        a.stat-link(href="/transferred") View All →
 
   //- ── Chart & Recent Students ──
   .dashboard-grid
@@ -88,6 +88,9 @@ block content
     a.quick-link-card(href="/graduated")
       i.fas.fa-graduation-cap
       span Graduated
+    a.quick-link-card(href="/transferred")
+      i.fas.fa-exchange-alt
+      span Transferred
     a.quick-link-card(href="/classes")
       i.fas.fa-chalkboard
       span Classes

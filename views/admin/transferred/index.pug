@@ -1,0 +1,150 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-exchange-alt
+      span Transferred Students
+      span.count-badge= totalAll
+    .page-actions
+      button.btn.btn-secondary#printTransBtn(type="button")
+        i.fas.fa-print
+        span Print List
+
+  //- ── Stats ──
+  .class-stats-grid
+    .cstat-card.cstat-transfer
+      .cstat-icon
+        i.fas.fa-exchange-alt
+      .cstat-body
+        span.cstat-label Total Transferred
+        span.cstat-value= totalAll
+    .cstat-card.cstat-boys
+      .cstat-icon
+        i.fas.fa-mars
+      .cstat-body
+        span.cstat-label Boys
+        span.cstat-value= totalBoys
+        span.cstat-pct= totalAll ? Math.round(totalBoys/totalAll*100)+'%' : '0%'
+    .cstat-card.cstat-girls
+      .cstat-icon
+        i.fas.fa-venus
+      .cstat-body
+        span.cstat-label Girls
+        span.cstat-value= totalGirls
+        span.cstat-pct= totalAll ? Math.round(totalGirls/totalAll*100)+'%' : '0%'
+
+  //- ── Gender bar ──
+  if totalAll > 0
+    .gender-bar-card
+      .gender-bar-label
+        .gbl-item
+          span.gbl-dot.gbl-dot-boy
+          span Boys — #{totalBoys} (#{Math.round(totalBoys/totalAll*100)}%)
+        .gbl-item
+          span.gbl-dot.gbl-dot-girl
+          span Girls — #{totalGirls} (#{Math.round(totalGirls/totalAll*100)}%)
+      .gender-bar-track
+        .gender-bar-fill.gender-bar-boy(style=`width:${Math.round(totalBoys/totalAll*100)}%`)
+        .gender-bar-fill.gender-bar-girl(style=`width:${Math.round(totalGirls/totalAll*100)}%`)
+
+  //- ── Filters ──
+  form.filter-bar(method="GET" action="/transferred")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search transferred students..." value=query.search || '')
+    .filter-group
+      select(name="gender" onchange="this.form.submit()")
+        option(value="") All Gender
+        option(value="Male"   selected=(query.gender==='Male'))   Boys
+        option(value="Female" selected=(query.gender==='Female')) Girls
+    .filter-group
+      select(name="year" onchange="this.form.submit()")
+        option(value="") All Years
+        each yr in years
+          option(value=yr selected=(query.year==yr))= yr
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Filter
+    if query.search || query.gender || query.year
+      a.btn.btn-ghost(href="/transferred") Clear
+
+  //- ── Table ──
+  .table-card
+    if transfers.length === 0
+      .empty-state
+        i.fas.fa-exchange-alt
+        p No transferred students found
+        p.empty-sub Students with status "Transferred" will appear here automatically
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Student Name
+              th Adm. No
+              th Class
+              th Gender
+              th Destination School
+              th Transfer Date
+              th Actions
+          tbody
+            each t, i in transfers
+              tr
+                td.cell-num= (currentPage - 1) * pageSize + i + 1
+                td
+                  .student-cell
+                    .mini-avatar(class=t.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+                      = t.StudentFullName.charAt(0)
+                    span= t.StudentFullName
+                td
+                  code.mono= t.AdmissionNumber || '—'
+                td= t.ClassName || '—'
+                td
+                  span.gender-badge(class=t.Gender === 'Male' ? 'gender-m' : 'gender-f')
+                    i(class=t.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+                    = ' ' + t.Gender
+                td= t.DestinationSchool || '—'
+                td= t.TransferDate ? new Date(t.TransferDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'
+                td.actions-cell
+                  a.btn-icon.btn-view(href=`/transferred/${t.TransferredID}` title="View")
+                    i.fas.fa-eye
+                  a.btn-icon.btn-view(href=`/transferred/${t.TransferredID}/print` target="_blank" title="Print")
+                    i.fas.fa-print
+                  if role === 'admin'
+                    a.btn-icon.btn-edit(href=`/transferred/${t.TransferredID}/edit` title="Edit")
+                      i.fas.fa-pen
+                    form(action=`/transferred/${t.TransferredID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this record? The student will be restored to Ongoing status.')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/transferred?page=${currentPage-1}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}`)
+              i.fas.fa-chevron-left
+          - let ps = Math.max(1, currentPage-2)
+          - let pe = Math.min(totalPages, currentPage+2)
+          if ps > 1
+            a.page-btn(href=`/transferred?page=1`) 1
+            if ps > 2
+              span.page-ellipsis …
+          each n in Array.from({length: pe-ps+1}, (_, i) => ps+i)
+            a.page-btn(href=`/transferred?page=${n}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}` class=(n===currentPage?'active':''))= n
+          if pe < totalPages
+            if pe < totalPages-1
+              span.page-ellipsis …
+            a.page-btn(href=`/transferred?page=${totalPages}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/transferred?page=${currentPage+1}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}`)
+              i.fas.fa-chevron-right
+        .pagination-info Showing #{(currentPage-1)*pageSize+1}–#{Math.min(currentPage*pageSize,count)} of #{count} records
+
+block scripts
+  script.
+    document.getElementById('printTransBtn').addEventListener('click', function() {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('page');
+      window.open('/transferred/print?' + params.toString(), '_blank');
+    });

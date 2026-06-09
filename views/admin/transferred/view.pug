@@ -1,0 +1,127 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-exchange-alt
+      span Transfer Record
+    .page-actions
+      a.btn.btn-secondary(href=`/transferred/${transfer.TransferredID}/print` target="_blank")
+        i.fas.fa-print
+        span Print Profile
+      if role === 'admin'
+        a.btn.btn-primary(href=`/transferred/${transfer.TransferredID}/edit`)
+          i.fas.fa-pen
+          span Edit / Change Status
+      a.btn.btn-ghost(href="/transferred")
+        i.fas.fa-arrow-left
+        span Back
+
+  .profile-card
+    .profile-header
+      .profile-avatar(class=transfer.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+        = transfer.StudentFullName.charAt(0)
+      .profile-meta
+        h2= transfer.StudentFullName
+        .profile-tags
+          span.status-pill.status-transferred Transferred
+          span.gender-badge(class=transfer.Gender === 'Male' ? 'gender-m' : 'gender-f')
+            i(class=transfer.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+            = ' ' + transfer.Gender
+          if transfer.ClassName
+            span.class-tag
+              i.fas.fa-chalkboard
+              = ' ' + transfer.ClassName
+          if transfer.AdmissionNumber
+            span.adm-tag
+              i.fas.fa-hashtag
+              = ' ' + transfer.AdmissionNumber
+
+    .profile-body
+      .info-grid
+        .info-section
+          h3
+            i.fas.fa-exchange-alt
+            span  Transfer Info
+          .info-row
+            span.info-label
+              i.fas.fa-id-badge
+              span Admission No.
+            span.info-val.mono-val= transfer.AdmissionNumber || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-calendar-alt
+              span Transfer Date
+            span.info-val= transfer.TransferDate ? new Date(transfer.TransferDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-school
+              span Destination
+            span.info-val= transfer.DestinationSchool || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-building-columns
+              span Department
+            span.info-val= transfer.DepartmentName || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-chalkboard
+              span Class
+            span.info-val= transfer.ClassName || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-stream
+              span Stream
+            span.info-val= transfer.StreamName || '—'
+          if transfer.Notes
+            .info-row
+              span.info-label
+                i.fas.fa-sticky-note
+                span Notes
+              span.info-val= transfer.Notes
+
+        .info-section
+          h3
+            i.fas.fa-user
+            span  Personal Info
+          .info-row
+            span.info-label
+              i.fas.fa-venus-mars
+              span Gender
+            span.info-val= transfer.Gender
+          .info-row
+            span.info-label
+              i.fas.fa-birthday-cake
+              span Date of Birth
+            span.info-val= transfer.DateOfBirth ? new Date(transfer.DateOfBirth).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-calendar-plus
+              span Admission Date
+            span.info-val= transfer.AdmissionDate ? new Date(transfer.AdmissionDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-home
+              span Address
+            span.info-val= transfer.Address || '—'
+
+        .info-section
+          h3
+            i.fas.fa-phone
+            span  Parent / Guardian
+          .info-row
+            span.info-label
+              i.fas.fa-phone
+              span Phone
+            if transfer.ParentPhone
+              a.info-val.link(href=`tel:${transfer.ParentPhone}`)= transfer.ParentPhone
+            else
+              span.info-val —
+          .info-row
+            span.info-label
+              i.fas.fa-envelope
+              span Email
+            if transfer.ParentEmail
+              a.info-val.link(href=`mailto:${transfer.ParentEmail}`)= transfer.ParentEmail
+            else
+              span.info-val —

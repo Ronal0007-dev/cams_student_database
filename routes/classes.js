@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
       include: [
         { model: Department, as: 'Department' },
         { model: Stream,     as: 'Streams' },
-        { model: Student,    as: 'Students', attributes: ['StudentID', 'Gender'], where: { Status: ['Ongoing', 'Transferred'] }, required: false }
+        { model: Student,    as: 'Students', attributes: ['StudentID', 'Gender'], where: { Status: 'Ongoing' }, required: false }
       ],
       order: [['Level','ASC'],['ClassName','ASC']],
       limit: PAGE_SIZE,
@@ -64,22 +64,22 @@ router.get('/:id/view', async (req, res) => {
     if (!cls) { req.flash('error','Class not found'); return res.redirect('/classes'); }
 
     // Student filters
-    const where = { ClassID: req.params.id, Status: { [Op.ne]: 'Completed' } };
+    const where = { ClassID: req.params.id, Status: 'Ongoing' };
     if (search) where.StudentFullName = { [Op.like]: `%${search}%` };
     if (gender) where.Gender = gender;
     if (status) where.Status = status;
     if (stmId)  where.StmID  = stmId;
 
     // Totals (unfiltered)
-    const ACTIVE = { ClassID: req.params.id, Status: ['Ongoing', 'Transferred'] };
-    const [totalStudents, totalBoys, totalGirls, totalOngoing, totalCompleted, totalTransferred] = await Promise.all([
+    const ACTIVE = { ClassID: req.params.id, Status: 'Ongoing' };
+    const [totalStudents, totalBoys, totalGirls] = await Promise.all([
       Student.count({ where: ACTIVE }),
       Student.count({ where: { ...ACTIVE, Gender: 'Male'   } }),
-      Student.count({ where: { ...ACTIVE, Gender: 'Female' } }),
-      Student.count({ where: { ClassID: req.params.id, Status: 'Ongoing'     } }),
-      Student.count({ where: { ClassID: req.params.id, Status: 'Completed'   } }),
-      Student.count({ where: { ClassID: req.params.id, Status: 'Transferred' } })
+      Student.count({ where: { ...ACTIVE, Gender: 'Female' } })
     ]);
+    const totalOngoing = totalStudents;
+    const totalCompleted = 0;
+    const totalTransferred = 0;
 
     const { count: filteredCount, rows: students } = await Student.findAndCountAll({
       where,

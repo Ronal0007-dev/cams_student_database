@@ -62,3 +62,7 @@ operable program or batch file.
 [2026-06-09T10:24:27.100Z]    Backup email → kallagiga0@gmail.com
 [2026-06-09T10:24:27.101Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
 [2026-06-09T10:24:27.102Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T20:24:18.731Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T20:24:18.735Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T20:24:18.742Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T20:24:18.747Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe

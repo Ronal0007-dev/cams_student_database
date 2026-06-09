@@ -30,12 +30,6 @@ block content
         each c in classes
           option(value=c.ClassID selected=(query.classId == c.ClassID))= c.ClassName
     .filter-group
-      select(name="status" onchange="this.form.submit()")
-        option(value="") All Status
-        option(value="Ongoing"     selected=(query.status==='Ongoing'))     Ongoing
-        option(value="Completed"   selected=(query.status==='Completed'))   Completed
-        option(value="Transferred" selected=(query.status==='Transferred')) Transferred
-    .filter-group
       select(name="gender" onchange="this.form.submit()")
         option(value="") All Gender
         option(value="Male"   selected=(query.gender==='Male'))   Male
@@ -43,7 +37,7 @@ block content
     button.btn.btn-secondary(type="submit")
       i.fas.fa-filter
       span Filter
-    if query.search || query.classId || query.status || query.gender
+    if query.search || query.classId || query.gender
       a.btn.btn-ghost(href="/students") Clear
 
   //- ── Table ──

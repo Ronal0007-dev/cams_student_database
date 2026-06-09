@@ -49,6 +49,7 @@ app.use('/classes',     isAuthenticated, require('./routes/classes'));
 app.use('/streams',     isAuthenticated, require('./routes/streams'));
 app.use('/users',       isAuthenticated, require('./routes/users'));
 app.use('/graduated',   isAuthenticated, require('./routes/graduated'));
+app.use('/transferred', isAuthenticated, require('./routes/transferred'));
 app.use('/backup',      isAuthenticated, require('./routes/backup'));
 app.use('/graduated',   isAuthenticated, require('./routes/graduated'));
 
