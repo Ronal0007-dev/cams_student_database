@@ -26,3 +26,39 @@ operable program or batch file.
 [2026-06-08T04:53:38.571Z]    Backup email → kallagiga0@gmail.com
 [2026-06-08T04:53:38.573Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
 [2026-06-08T04:53:38.575Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-08T05:52:42.740Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-08T05:52:42.741Z]    Backup email → kallagiga0@gmail.com
+[2026-06-08T05:52:42.742Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-08T05:52:42.743Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T04:56:43.747Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T04:56:43.749Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T04:56:43.751Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T04:56:43.752Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T09:59:00.506Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T09:59:00.511Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T09:59:00.516Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T09:59:00.517Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T09:59:14.052Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T09:59:14.053Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T09:59:14.055Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T09:59:14.057Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:03:19.650Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T10:03:19.652Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T10:03:19.653Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:03:19.654Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:06:08.350Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T10:06:08.352Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T10:06:08.353Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:06:08.354Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:15:40.500Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T10:15:40.501Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T10:15:40.502Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:15:40.503Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:24:11.056Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T10:24:11.057Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T10:24:11.059Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:24:11.060Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:24:27.099Z] ⏰ Backup scheduler active — "0 2 */7 * *" (Every 7 days at 02:00)
+[2026-06-09T10:24:27.100Z]    Backup email → kallagiga0@gmail.com
+[2026-06-09T10:24:27.101Z] 🔍 Found mysqldump at: C:\xampp\mysql\bin\mysqldump.exe
+[2026-06-09T10:24:27.102Z] 🔧 mysqldump found: C:\xampp\mysql\bin\mysqldump.exe

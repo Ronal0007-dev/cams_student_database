@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
       include: [
         { model: Department, as: 'Department' },
         { model: Stream,     as: 'Streams' },
-        { model: Student,    as: 'Students', attributes: ['StudentID', 'Gender'] }
+        { model: Student,    as: 'Students', attributes: ['StudentID', 'Gender'], where: { Status: ['Ongoing', 'Transferred'] }, required: false }
       ],
       order: [['Level','ASC'],['ClassName','ASC']],
       limit: PAGE_SIZE,
@@ -64,19 +64,20 @@ router.get('/:id/view', async (req, res) => {
     if (!cls) { req.flash('error','Class not found'); return res.redirect('/classes'); }
 
     // Student filters
-    const where = { ClassID: req.params.id };
+    const where = { ClassID: req.params.id, Status: { [Op.ne]: 'Completed' } };
     if (search) where.StudentFullName = { [Op.like]: `%${search}%` };
     if (gender) where.Gender = gender;
     if (status) where.Status = status;
     if (stmId)  where.StmID  = stmId;
 
     // Totals (unfiltered)
+    const ACTIVE = { ClassID: req.params.id, Status: ['Ongoing', 'Transferred'] };
     const [totalStudents, totalBoys, totalGirls, totalOngoing, totalCompleted, totalTransferred] = await Promise.all([
-      Student.count({ where: { ClassID: req.params.id } }),
-      Student.count({ where: { ClassID: req.params.id, Gender: 'Male' } }),
-      Student.count({ where: { ClassID: req.params.id, Gender: 'Female' } }),
-      Student.count({ where: { ClassID: req.params.id, Status: 'Ongoing' } }),
-      Student.count({ where: { ClassID: req.params.id, Status: 'Completed' } }),
+      Student.count({ where: ACTIVE }),
+      Student.count({ where: { ...ACTIVE, Gender: 'Male'   } }),
+      Student.count({ where: { ...ACTIVE, Gender: 'Female' } }),
+      Student.count({ where: { ClassID: req.params.id, Status: 'Ongoing'     } }),
+      Student.count({ where: { ClassID: req.params.id, Status: 'Completed'   } }),
       Student.count({ where: { ClassID: req.params.id, Status: 'Transferred' } })
     ]);
 

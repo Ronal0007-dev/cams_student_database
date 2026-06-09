@@ -1,0 +1,112 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-user-edit
+      span Edit Graduated Student
+    .page-actions
+      a.btn.btn-ghost(href="/graduated")
+        i.fas.fa-arrow-left
+        span Back
+
+  .form-card.form-sm
+    //- Student identity (read-only)
+    .grad-identity-bar
+      .mini-avatar(class=grad.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+        = grad.StudentFullName.charAt(0)
+      .grad-id-info
+        span.grad-id-name= grad.StudentFullName
+        span.grad-id-meta
+          | #{grad.ClassName || 'Unknown Class'} &nbsp;·&nbsp; #{grad.AdmissionNumber || 'No Admission No.'}
+
+    form(action=action method="POST" class="styled-form")
+      input(type="hidden" name="_method" value="PUT")
+
+      .form-section
+        h3.section-title
+          i.fas.fa-toggle-on
+          span Status
+        .status-change-block
+          .status-option
+            input#statusCompleted(type="radio" name="Status" value="Completed" checked=grad.Status==='Completed')
+            label(for="statusCompleted")
+              .so-icon.so-completed
+                i.fas.fa-graduation-cap
+              .so-label
+                strong Completed
+                span Student has finished school
+          .status-option
+            input#statusTransferred(type="radio" name="Status" value="Transferred" checked=grad.Status==='Transferred')
+            label(for="statusTransferred")
+              .so-icon.so-transferred
+                i.fas.fa-exchange-alt
+              .so-label
+                strong Transferred
+                span Moved to another school
+          .status-option
+            input#statusOngoing(type="radio" name="Status" value="Ongoing" checked=grad.Status==='Ongoing')
+            label(for="statusOngoing")
+              .so-icon.so-ongoing
+                i.fas.fa-user-check
+              .so-label
+                strong Ongoing
+                span Return to active students
+        .status-warn#statusWarn(style="display:none")
+          i.fas.fa-info-circle
+          span Changing status to <strong id="warnStatus"></strong> will move this student out of the Graduated list and back to active students.
+
+      .form-section
+        h3.section-title
+          i.fas.fa-calendar-check
+          span Graduation Date
+        .form-group
+          label(for="GraduationDate") Graduation / Completion Date
+          input#GraduationDate(
+            type="date" name="GraduationDate"
+            value=grad.GraduationDate ? grad.GraduationDate.toString().split('T')[0] : '')
+
+      .form-section
+        h3.section-title
+          i.fas.fa-phone
+          span Parent Contact
+        .form-row
+          .form-group
+            label(for="ParentPhone") Phone Number
+            input#ParentPhone(type="tel" name="ParentPhone" value=grad.ParentPhone || '' placeholder="+255 7XX XXX XXX")
+          .form-group.col-2
+            label(for="ParentEmail") Email Address
+            input#ParentEmail(type="email" name="ParentEmail" value=grad.ParentEmail || '' placeholder="parent@email.com")
+
+      .form-section
+        h3.section-title
+          i.fas.fa-home
+          span Address & Notes
+        .form-group
+          label(for="Address") Address
+          textarea#Address(name="Address" rows="2")= grad.Address || ''
+        .form-group
+          label(for="Notes") Notes (optional)
+          textarea#Notes(name="Notes" rows="2" placeholder="Any additional notes about this student...")= grad.Notes || ''
+
+      .form-actions
+        button.btn.btn-primary(type="submit")
+          i.fas.fa-save
+          span Save Changes
+        a.btn.btn-ghost(href="/graduated") Cancel
+
+block scripts
+  script.
+    const radios = document.querySelectorAll('input[name="Status"]');
+    const warn   = document.getElementById('statusWarn');
+    const warnTxt= document.getElementById('warnStatus');
+    radios.forEach(r => {
+      r.addEventListener('change', function() {
+        if (this.value !== 'Completed') {
+          warn.style.display = 'flex';
+          warnTxt.textContent = this.value;
+        } else {
+          warn.style.display = 'none';
+        }
+      });
+    });

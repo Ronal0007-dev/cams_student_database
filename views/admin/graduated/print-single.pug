@@ -1,0 +1,191 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= `Graduate Certificate — ${grad.StudentFullName}`
+    link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet")
+    style.
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Outfit', sans-serif; background: #f1f5f9; color: #0f172a; font-size: 13px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { max-width: 780px; margin: 24px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+      .screen-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #1e293b; }
+      .screen-toolbar button { padding: 7px 18px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+      .btn-print { background: #7c3aed; color: #fff; }
+      .btn-close  { background: #334155; color: #cbd5e1; }
+      .toolbar-spacer { flex: 1; }
+      .toolbar-info { font-size: 0.75rem; color: #64748b; }
+
+      /* Gradient header — purple/violet for graduates */
+      .card-header {
+        background: linear-gradient(135deg, #312e81 0%, #4c1d95 40%, #6d28d9 100%);
+        padding: 28px 32px; display: flex; align-items: center; gap: 20px;
+        color: #fff; position: relative; overflow: hidden;
+      }
+      .card-header::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,0.06); }
+      .student-avatar-print { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:800; color:#fff; flex-shrink:0; border:3px solid rgba(255,255,255,0.3); position:relative; z-index:1; }
+      .avatar-male   { background: linear-gradient(135deg,#2563eb,#1d4ed8); }
+      .avatar-female { background: linear-gradient(135deg,#db2777,#be185d); }
+      .header-meta { flex:1; position:relative; z-index:1; }
+      .student-name { font-size:1.5rem; font-weight:800; letter-spacing:0.01em; margin-bottom:6px; }
+      .header-tags { display:flex; gap:8px; flex-wrap:wrap; }
+      .htag { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:600; }
+      .school-brand { text-align:right; position:relative; z-index:1; flex-shrink:0; }
+      .brand-icon { width:48px; height:48px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-left:auto; margin-bottom:4px; }
+      .brand-name { font-size:0.9rem; font-weight:800; letter-spacing:0.08em; }
+      .brand-sub  { font-size:0.65rem; opacity:0.7; }
+
+      /* Graduation badge banner */
+      .grad-banner { background:linear-gradient(135deg,#ede9fe,#ddd6fe); border-bottom:1px solid #c4b5fd; padding:12px 32px; display:flex; align-items:center; justify-content:space-between; }
+      .grad-banner-left { display:flex; align-items:center; gap:12px; }
+      .grad-cap-icon { font-size:1.4rem; }
+      .grad-title { font-size:0.72rem; color:#6d28d9; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; }
+      .grad-adm { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:700; color:#4c1d95; letter-spacing:0.05em; }
+      .grad-date { font-size:0.78rem; color:#6d28d9; }
+
+      /* Info sections */
+      .info-sections { display:grid; grid-template-columns:1fr 1fr; gap:0; border-top:1px solid #e2e8f0; }
+      .info-section { padding:18px 22px; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; }
+      .info-section:nth-child(even) { border-right:none; }
+      .info-section.full-width { grid-column:span 2; border-right:none; }
+      .section-title { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.12em; color:#64748b; margin-bottom:10px; display:flex; align-items:center; gap:6px; padding-bottom:6px; border-bottom:2px solid #f1f5f9; }
+      .dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+      .dot-academic { background:#7c3aed; }
+      .dot-personal { background:#0ea5e9; }
+      .dot-parent   { background:#10b981; }
+      .dot-notes    { background:#f59e0b; }
+      .info-row { display:flex; align-items:flex-start; padding:6px 0; border-bottom:1px solid #f8fafc; gap:10px; }
+      .info-row:last-child { border-bottom:none; }
+      .info-key { font-size:0.73rem; font-weight:600; color:#94a3b8; min-width:110px; flex-shrink:0; padding-top:1px; }
+      .info-val { font-size:0.82rem; font-weight:600; color:#1e293b; word-break:break-word; }
+      .info-val.mono { font-family:'JetBrains Mono',monospace; color:#6d28d9; }
+      .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:0.7rem; font-weight:700; }
+      .badge-completed   { background:#ede9fe; color:#6d28d9; }
+      .badge-transferred { background:#fef9c3; color:#a16207; }
+      .badge-ongoing     { background:#dcfce7; color:#15803d; }
+      .badge-male        { background:#dbeafe; color:#1d4ed8; }
+      .badge-female      { background:#fce7f3; color:#be185d; }
+
+      /* Signatures */
+      .signature-row { display:flex; justify-content:space-between; padding:20px 32px; border-top:1px solid #e2e8f0; background:#faf5ff; gap:20px; }
+      .sig-block { flex:1; text-align:center; }
+      .sig-line { border-top:1px solid #94a3b8; padding-top:5px; margin-top:28px; font-size:0.7rem; color:#6d28d9; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; }
+
+      /* Footer */
+      .card-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 32px; background:#4c1d95; color:rgba(255,255,255,0.6); font-size:0.68rem; }
+
+      @media print {
+        body { background:#fff; }
+        .page { margin:0; max-width:100%; box-shadow:none; border-radius:0; }
+        .screen-toolbar { display:none !important; }
+      }
+      @page { size:A4; margin:10mm 12mm; }
+  body
+    .page
+      .screen-toolbar
+        button.btn-print(onclick="window.print()") 🖨 Print / Save PDF
+        button.btn-close(onclick="window.close()") ✕ Close
+        span.toolbar-spacer
+        span.toolbar-info Printed: #{printDate}
+
+      .card-header
+        .student-avatar-print(class=grad.Gender === 'Male' ? 'avatar-male' : 'avatar-female')
+          = grad.StudentFullName.charAt(0).toUpperCase()
+        .header-meta
+          .student-name= grad.StudentFullName
+          .header-tags
+            span.htag #{grad.Status}
+            span.htag #{grad.Gender}
+            if grad.ClassName
+              span.htag= grad.ClassName
+            if grad.StreamName
+              span.htag= grad.StreamName
+        .school-brand
+          .brand-icon 🎓
+          .brand-name SMS
+          .brand-sub Student Management System
+
+      .grad-banner
+        .grad-banner-left
+          span.grad-cap-icon 🎓
+          div
+            .grad-title Graduated Student Record
+            .grad-adm= grad.AdmissionNumber || 'N/A'
+        .grad-date
+          | Graduation Date:&nbsp;
+          strong= grad.GraduationDate ? new Date(grad.GraduationDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+
+      .info-sections
+        .info-section
+          .section-title
+            span.dot.dot-academic
+            | Academic Information
+          .info-row
+            span.info-key Admission No.
+            span.info-val.mono= grad.AdmissionNumber || '—'
+          .info-row
+            span.info-key Department
+            span.info-val= grad.DepartmentName || '—'
+          .info-row
+            span.info-key Class
+            span.info-val= grad.ClassName || '—'
+          .info-row
+            span.info-key Stream
+            span.info-val= grad.StreamName || '—'
+          .info-row
+            span.info-key Status
+            span.info-val
+              span.badge(class=`badge-${grad.Status.toLowerCase()}`)= grad.Status
+          .info-row
+            span.info-key Admission Date
+            span.info-val= grad.AdmissionDate ? new Date(grad.AdmissionDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+
+        .info-section
+          .section-title
+            span.dot.dot-personal
+            | Personal Information
+          .info-row
+            span.info-key Gender
+            span.info-val
+              span.badge(class=grad.Gender==='Male'?'badge-male':'badge-female')= grad.Gender
+          .info-row
+            span.info-key Date of Birth
+            span.info-val= grad.DateOfBirth ? new Date(grad.DateOfBirth).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-key Address
+            span.info-val= grad.Address || '—'
+          .info-row
+            span.info-key Printed On
+            span.info-val= printDate
+
+        .info-section
+          .section-title
+            span.dot.dot-parent
+            | Parent / Guardian Contact
+          .info-row
+            span.info-key Phone Number
+            span.info-val= grad.ParentPhone || '—'
+          .info-row
+            span.info-key Email Address
+            span.info-val= grad.ParentEmail || '—'
+
+        .info-section
+          .section-title
+            span.dot.dot-notes
+            | Notes
+          .info-row
+            span.info-val(style="width:100%;font-style:italic;color:#64748b")= grad.Notes || 'No notes recorded.'
+
+      .signature-row
+        .sig-block
+          .sig-line Class Teacher
+        .sig-block
+          .sig-line Head of Department
+        .sig-block
+          .sig-line Head Teacher / Principal
+        .sig-block
+          .sig-line Date
+
+      .card-footer
+        span SMS — Graduated Student Record
+        span Ref: #{grad.AdmissionNumber || grad.GraduatedID}

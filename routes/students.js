@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Student, Class, Stream, Department } = require('../models');
+const { Student, Class, Stream, Department, Graduated } = require('../models');
 const { Op } = require('sequelize');
 const { isAdminOrTeacher, isAdmin } = require('../middleware/auth');
 const { generateAdmissionNumber } = require('../config/admissionNumber');
@@ -16,11 +16,47 @@ function buildWhere(q) {
   return where;
 }
 
+
+// ── Sync student graduation status ──────────────────────────────
+// Called after any status change; keeps graduated table in sync
+async function syncGraduated(student) {
+  if (!student) return;
+  const cls    = student.Class  || await student.getClass({ include: [{ model: Department, as: 'Department' }] });
+  const stream = student.Stream || (student.StmID ? await student.getStream() : null);
+
+  if (student.Status === 'Completed') {
+    // Upsert into graduated table
+    await Graduated.upsert({
+      StudentID:      student.StudentID,
+      StudentFullName:student.StudentFullName,
+      AdmissionNumber:student.AdmissionNumber,
+      Gender:         student.Gender,
+      DateOfBirth:    student.DateOfBirth,
+      ParentPhone:    student.ParentPhone,
+      ParentEmail:    student.ParentEmail,
+      Address:        student.Address,
+      ClassID:        student.ClassID,
+      ClassName:      cls  ? cls.ClassName  : null,
+      StmID:          student.StmID,
+      StreamName:     stream ? stream.StmName : null,
+      DepartmentName: cls && cls.Department ? cls.Department.DeptName : null,
+      AdmissionDate:  student.AdmissionDate,
+      GraduationDate: new Date(),
+      Status:         'Completed'
+    });
+  } else {
+    // No longer Completed — remove from graduated table
+    await Graduated.destroy({ where: { StudentID: student.StudentID } });
+  }
+}
+
 // ── GET /students ──
 router.get('/', async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page) || 1);
-    const where = buildWhere(req.query);
+    // Exclude completed — they live in the graduated table
+    const baseExclude = { Status: { [Op.ne]: 'Completed' } };
+    const where = { ...baseExclude, ...buildWhere(req.query) };
 
     const { count, rows: students } = await Student.findAndCountAll({
       where,
@@ -171,12 +207,37 @@ router.post('/', isAdminOrTeacher, async (req, res) => {
       AdmissionDate: AdmissionDate || new Date()
     });
 
+    const created = await Student.findByPk((await Student.findOne({ where: { AdmissionNumber }, order: [['createdAt','DESC']] })).StudentID, {
+      include: [{ model: Class, as: 'Class', include: [{ model: Department, as: 'Department' }] }, { model: Stream, as: 'Stream' }]
+    });
+    await syncGraduated(created);
     req.flash('success', `Student added — Admission No: ${AdmissionNumber}`);
     res.redirect('/students');
   } catch (err) {
     console.error(err);
     req.flash('error', 'Failed to add student: ' + err.message);
     res.redirect('/students/new');
+  }
+});
+
+// ── GET /students/:id/print — individual student print card ──
+router.get('/:id/print', async (req, res) => {
+  try {
+    const student = await Student.findByPk(req.params.id, {
+      include: [
+        { model: Class,  as: 'Class',  include: [{ model: Department, as: 'Department' }] },
+        { model: Stream, as: 'Stream' }
+      ]
+    });
+    if (!student) { req.flash('error','Student not found'); return res.redirect('/students'); }
+    res.render('admin/students/print-single', {
+      title: `Print — ${student.StudentFullName}`,
+      student,
+      printDate: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' })
+    });
+  } catch (err) {
+    req.flash('error','Failed to load student');
+    res.redirect('/students');
   }
 });
 
@@ -232,6 +293,10 @@ router.put('/:id', isAdminOrTeacher, async (req, res) => {
       ClassID, StmID: StmID || null,
       Gender, Status, DateOfBirth, Address, AdmissionDate
     }, { where: { StudentID: req.params.id } });
+    const updated = await Student.findByPk(req.params.id, {
+      include: [{ model: Class, as: 'Class', include: [{ model: Department, as: 'Department' }] }, { model: Stream, as: 'Stream' }]
+    });
+    if (updated) await syncGraduated(updated);
     req.flash('success','Student updated successfully');
     res.redirect('/students');
   } catch (err) {
@@ -244,6 +309,7 @@ router.put('/:id', isAdminOrTeacher, async (req, res) => {
 router.delete('/:id', isAdmin, async (req, res) => {
   try {
     await Student.destroy({ where: { StudentID: req.params.id } });
+    await Graduated.destroy({ where: { StudentID: req.params.id } });
     req.flash('success','Student deleted');
     res.redirect('/students');
   } catch (err) {
@@ -259,6 +325,10 @@ router.post('/:id/move', isAdminOrTeacher, async (req, res) => {
     const updateData = { ClassID: newClassID, StmID: newStmID || null };
     if (newStatus) updateData.Status = newStatus;
     await Student.update(updateData, { where: { StudentID: req.params.id } });
+    const moved = await Student.findByPk(req.params.id, {
+      include: [{ model: Class, as: 'Class', include: [{ model: Department, as: 'Department' }] }, { model: Stream, as: 'Stream' }]
+    });
+    if (moved) await syncGraduated(moved);
     req.flash('success','Student moved successfully');
     res.redirect('/students');
   } catch (err) {

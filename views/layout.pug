@@ -30,6 +30,9 @@ html(lang="en")
               a.nav-item(href="/students" class=(title && title.includes('Student') ? 'active' : ''))
                 i.fas.fa-user-graduate
                 span Students
+              a.nav-item(href="/graduated" class=(title && title.includes('Graduated') ? 'active' : ''))
+                i.fas.fa-graduation-cap
+                span Graduated
 
             .nav-section
               span.nav-label Structure
@@ -46,6 +49,9 @@ html(lang="en")
             if role === 'admin'
               .nav-section
                 span.nav-label Admin
+                a.nav-item(href="/graduated" class=(title && title.includes('Graduated') ? 'active' : ''))
+                  i.fas.fa-graduation-cap
+                  span Graduated
                 a.nav-item(href="/users" class=(title && title.includes('User') ? 'active' : ''))
                   i.fas.fa-users-cog
                   span Users

@@ -1,0 +1,158 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-graduation-cap
+      span Graduated Students
+      span.count-badge= totalAll
+    .page-actions
+      button.btn.btn-secondary#printGradBtn(type="button")
+        i.fas.fa-print
+        span Print List
+
+  //- ── Stats ──
+  .class-stats-grid
+    .cstat-card.cstat-total
+      .cstat-icon
+        i.fas.fa-graduation-cap
+      .cstat-body
+        span.cstat-label Total Graduated
+        span.cstat-value= totalAll
+    .cstat-card.cstat-boys
+      .cstat-icon
+        i.fas.fa-mars
+      .cstat-body
+        span.cstat-label Boys
+        span.cstat-value= totalBoys
+        span.cstat-pct= totalAll ? Math.round(totalBoys/totalAll*100)+'%' : '0%'
+    .cstat-card.cstat-girls
+      .cstat-icon
+        i.fas.fa-venus
+      .cstat-body
+        span.cstat-label Girls
+        span.cstat-value= totalGirls
+        span.cstat-pct= totalAll ? Math.round(totalGirls/totalAll*100)+'%' : '0%'
+
+  //- ── Gender bar ──
+  if totalAll > 0
+    .gender-bar-card
+      .gender-bar-label
+        .gbl-item
+          span.gbl-dot.gbl-dot-boy
+          span Boys — #{totalBoys} (#{Math.round(totalBoys/totalAll*100)}%)
+        .gbl-item
+          span.gbl-dot.gbl-dot-girl
+          span Girls — #{totalGirls} (#{Math.round(totalGirls/totalAll*100)}%)
+      .gender-bar-track
+        .gender-bar-fill.gender-bar-boy(style=`width:${Math.round(totalBoys/totalAll*100)}%`)
+        .gender-bar-fill.gender-bar-girl(style=`width:${Math.round(totalGirls/totalAll*100)}%`)
+
+  //- ── Filters ──
+  form.filter-bar#gradFilterForm(method="GET" action="/graduated")
+    .filter-group
+      i.fas.fa-search
+      input(type="text" name="search" placeholder="Search graduates..." value=query.search || '')
+    .filter-group
+      select(name="gender" onchange="this.form.submit()")
+        option(value="") All Gender
+        option(value="Male"   selected=(query.gender==='Male'))   Boys
+        option(value="Female" selected=(query.gender==='Female')) Girls
+    .filter-group
+      select(name="year" onchange="this.form.submit()")
+        option(value="") All Years
+        each yr in years
+          option(value=yr selected=(query.year==yr))= yr
+    .filter-group
+      select(name="status" onchange="this.form.submit()")
+        option(value="")           All Status
+        option(value="Completed"   selected=(query.status==='Completed'))   Completed
+        option(value="Transferred" selected=(query.status==='Transferred')) Transferred
+        option(value="Ongoing"     selected=(query.status==='Ongoing'))     Ongoing
+    button.btn.btn-secondary(type="submit")
+      i.fas.fa-filter
+      span Filter
+    if query.search || query.gender || query.year || query.status
+      a.btn.btn-ghost(href="/graduated") Clear
+
+  //- ── Table ──
+  .table-card
+    if graduates.length === 0
+      .empty-state
+        i.fas.fa-graduation-cap
+        p No graduated students found
+        p.empty-sub Students with status "Completed" will appear here automatically
+    else
+      .table-wrap
+        table.data-table
+          thead
+            tr
+              th #
+              th Student Name
+              th Adm. No
+              th Class
+              th Gender
+              th Status
+              th Graduation Date
+              th Actions
+          tbody
+            each g, i in graduates
+              tr
+                td.cell-num= (currentPage - 1) * pageSize + i + 1
+                td
+                  .student-cell
+                    .mini-avatar(class=g.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+                      = g.StudentFullName.charAt(0)
+                    span= g.StudentFullName
+                td
+                  code.mono= g.AdmissionNumber || '—'
+                td= g.ClassName || '—'
+                td
+                  span.gender-badge(class=g.Gender === 'Male' ? 'gender-m' : 'gender-f')
+                    i(class=g.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+                    = ' ' + g.Gender
+                td
+                  span.status-pill(class=`status-${g.Status.toLowerCase()}`)= g.Status
+                td= g.GraduationDate ? new Date(g.GraduationDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'
+                td.actions-cell
+                  a.btn-icon.btn-view(href=`/graduated/${g.GraduatedID}` title="View Profile")
+                    i.fas.fa-eye
+                  a.btn-icon.btn-view(href=`/graduated/${g.GraduatedID}/print` target="_blank" title="Print")
+                    i.fas.fa-print
+                  if role !== 'viewer'
+                    a.btn-icon.btn-edit(href=`/graduated/${g.GraduatedID}/edit` title="Edit / Change Status")
+                      i.fas.fa-pen
+                  if role === 'admin'
+                    form(action=`/graduated/${g.GraduatedID}?_method=DELETE` method="POST" style="display:inline")
+                      button.btn-icon.btn-delete(type="submit" onclick="return confirm('Delete this record? The student will be restored to Ongoing status.')" title="Delete")
+                        i.fas.fa-trash
+
+      if totalPages > 1
+        .pagination
+          if currentPage > 1
+            a.page-btn(href=`/graduated?page=${currentPage-1}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}&status=${query.status||''}`)
+              i.fas.fa-chevron-left
+          - let ps = Math.max(1, currentPage-2)
+          - let pe = Math.min(totalPages, currentPage+2)
+          if ps > 1
+            a.page-btn(href=`/graduated?page=1`) 1
+            if ps > 2
+              span.page-ellipsis …
+          each n in Array.from({length: pe-ps+1}, (_, i) => ps+i)
+            a.page-btn(href=`/graduated?page=${n}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}&status=${query.status||''}` class=(n===currentPage?'active':''))= n
+          if pe < totalPages
+            if pe < totalPages-1
+              span.page-ellipsis …
+            a.page-btn(href=`/graduated?page=${totalPages}`)= totalPages
+          if currentPage < totalPages
+            a.page-btn(href=`/graduated?page=${currentPage+1}&search=${query.search||''}&gender=${query.gender||''}&year=${query.year||''}&status=${query.status||''}`)
+              i.fas.fa-chevron-right
+        .pagination-info Showing #{(currentPage-1)*pageSize+1}–#{Math.min(currentPage*pageSize,count)} of #{count} graduates
+
+block scripts
+  script.
+    document.getElementById('printGradBtn').addEventListener('click', function() {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('page');
+      window.open('/graduated/print?' + params.toString(), '_blank');
+    });

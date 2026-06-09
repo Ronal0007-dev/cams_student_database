@@ -1,0 +1,122 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-graduation-cap
+      span Graduated Profile
+    .page-actions
+      a.btn.btn-secondary(href=`/graduated/${grad.GraduatedID}/print` target="_blank")
+        i.fas.fa-print
+        span Print Profile
+      if role !== 'viewer'
+        a.btn.btn-primary(href=`/graduated/${grad.GraduatedID}/edit`)
+          i.fas.fa-pen
+          span Edit / Change Status
+      a.btn.btn-ghost(href="/graduated")
+        i.fas.fa-arrow-left
+        span Back
+
+  .profile-card
+    .profile-header
+      .profile-avatar(class=grad.Gender === 'Male' ? 'avatar-boy' : 'avatar-girl')
+        = grad.StudentFullName.charAt(0)
+      .profile-meta
+        h2= grad.StudentFullName
+        .profile-tags
+          span.status-pill(class=`status-${grad.Status.toLowerCase()}`)= grad.Status
+          span.gender-badge(class=grad.Gender === 'Male' ? 'gender-m' : 'gender-f')
+            i(class=grad.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
+            = ' ' + grad.Gender
+          if grad.ClassName
+            span.class-tag
+              i.fas.fa-chalkboard
+              = ' ' + grad.ClassName
+          if grad.AdmissionNumber
+            span.adm-tag
+              i.fas.fa-hashtag
+              = ' ' + grad.AdmissionNumber
+
+    .profile-body
+      .info-grid
+        .info-section
+          h3
+            i.fas.fa-graduation-cap
+            span  Academic Info
+          .info-row
+            span.info-label
+              i.fas.fa-id-badge
+              span Admission No.
+            span.info-val.mono-val= grad.AdmissionNumber || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-calendar-plus
+              span Admission Date
+            span.info-val= grad.AdmissionDate ? new Date(grad.AdmissionDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-building-columns
+              span Department
+            span.info-val= grad.DepartmentName || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-chalkboard
+              span Class
+            span.info-val= grad.ClassName || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-stream
+              span Stream
+            span.info-val= grad.StreamName || '—'
+          .info-row
+            span.info-label
+              i.fas.fa-calendar-check
+              span Graduation Date
+            span.info-val= grad.GraduationDate ? new Date(grad.GraduationDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+
+        .info-section
+          h3
+            i.fas.fa-user
+            span  Personal Info
+          .info-row
+            span.info-label
+              i.fas.fa-venus-mars
+              span Gender
+            span.info-val= grad.Gender
+          .info-row
+            span.info-label
+              i.fas.fa-birthday-cake
+              span Date of Birth
+            span.info-val= grad.DateOfBirth ? new Date(grad.DateOfBirth).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
+          .info-row
+            span.info-label
+              i.fas.fa-home
+              span Address
+            span.info-val= grad.Address || '—'
+          if grad.Notes
+            .info-row
+              span.info-label
+                i.fas.fa-sticky-note
+                span Notes
+              span.info-val= grad.Notes
+
+        .info-section
+          h3
+            i.fas.fa-phone
+            span  Parent / Guardian
+          .info-row
+            span.info-label
+              i.fas.fa-phone
+              span Phone
+            if grad.ParentPhone
+              a.info-val.link(href=`tel:${grad.ParentPhone}`)= grad.ParentPhone
+            else
+              span.info-val —
+          .info-row
+            span.info-label
+              i.fas.fa-envelope
+              span Email
+            if grad.ParentEmail
+              a.info-val.link(href=`mailto:${grad.ParentEmail}`)= grad.ParentEmail
+            else
+              span.info-val —

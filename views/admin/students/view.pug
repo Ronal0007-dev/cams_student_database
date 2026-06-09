@@ -6,6 +6,9 @@ block content
       i.fas.fa-id-card
       span Student Profile
     .page-actions
+      a.btn.btn-secondary(href=`/students/${student.StudentID}/print` target="_blank")
+        i.fas.fa-print
+        span Print Profile
       if role !== 'viewer'
         a.btn.btn-primary(href=`/students/${student.StudentID}/edit`)
           i.fas.fa-pen
@@ -24,26 +27,32 @@ block content
           span.status-pill(class=`status-${student.Status.toLowerCase()}`)= student.Status
           span.gender-badge(class=student.Gender === 'Male' ? 'gender-m' : 'gender-f')
             i(class=student.Gender === 'Male' ? 'fas fa-mars' : 'fas fa-venus')
-            = student.Gender
+            = ' ' + student.Gender
           if student.Class
             span.class-tag
               i.fas.fa-chalkboard
-              = student.Class.ClassName
-    
+              = ' ' + student.Class.ClassName
+          if student.AdmissionNumber
+            span.adm-tag
+              i.fas.fa-hashtag
+              = ' ' + student.AdmissionNumber
+
     .profile-body
       .info-grid
         .info-section
-          h3 Academic Info
+          h3
+            i.fas.fa-graduation-cap
+            span  Academic Info
           .info-row
             span.info-label
               i.fas.fa-id-badge
               span Admission No.
-            span.info-val= student.AdmissionNumber || '—'
+            span.info-val.mono-val= student.AdmissionNumber || '—'
           .info-row
             span.info-label
               i.fas.fa-calendar-plus
               span Admission Date
-            span.info-val= student.AdmissionDate ? new Date(student.AdmissionDate).toLocaleDateString() : '—'
+            span.info-val= student.AdmissionDate ? new Date(student.AdmissionDate).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
           .info-row
             span.info-label
               i.fas.fa-building-columns
@@ -59,22 +68,31 @@ block content
               i.fas.fa-stream
               span Stream
             span.info-val= student.Stream ? student.Stream.StmName : '—'
-        
+
         .info-section
-          h3 Personal Info
+          h3
+            i.fas.fa-user
+            span  Personal Info
+          .info-row
+            span.info-label
+              i.fas.fa-venus-mars
+              span Gender
+            span.info-val= student.Gender
           .info-row
             span.info-label
               i.fas.fa-birthday-cake
               span Date of Birth
-            span.info-val= student.DateOfBirth ? new Date(student.DateOfBirth).toLocaleDateString() : '—'
+            span.info-val= student.DateOfBirth ? new Date(student.DateOfBirth).toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}) : '—'
           .info-row
             span.info-label
               i.fas.fa-home
               span Address
             span.info-val= student.Address || '—'
-        
+
         .info-section
-          h3 Parent / Guardian
+          h3
+            i.fas.fa-phone
+            span  Parent / Guardian
           .info-row
             span.info-label
               i.fas.fa-phone

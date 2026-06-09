@@ -11,40 +11,40 @@ block content
           i.fas.fa-user-plus
           span Add Student
 
-  //- Stat Cards
+  //- ── Stat Cards ──
   .stats-grid
     .stat-card.stat-total
       .stat-icon
         i.fas.fa-users
       .stat-info
-        span.stat-label Total Students
+        span.stat-label Active Students
         span.stat-value= stats.totalStudents || 0
-        span.stat-sub= `${stats.ongoing || 0} ongoing`
-    
+        span.stat-sub Ongoing + Transferred
+
     .stat-card.stat-boys
       .stat-icon
         i.fas.fa-mars
       .stat-info
         span.stat-label Boys
         span.stat-value= stats.boys || 0
-        span.stat-sub= stats.totalStudents ? Math.round((stats.boys/stats.totalStudents)*100) + '%' : '0%'
-    
+        span.stat-sub= stats.totalStudents ? Math.round((stats.boys / stats.totalStudents) * 100) + '%' : '0%'
+
     .stat-card.stat-girls
       .stat-icon
         i.fas.fa-venus
       .stat-info
         span.stat-label Girls
         span.stat-value= stats.girls || 0
-        span.stat-sub= stats.totalStudents ? Math.round((stats.girls/stats.totalStudents)*100) + '%' : '0%'
-    
+        span.stat-sub= stats.totalStudents ? Math.round((stats.girls / stats.totalStudents) * 100) + '%' : '0%'
+
     .stat-card.stat-completed
       .stat-icon
-        i.fas.fa-user-check
+        i.fas.fa-graduation-cap
       .stat-info
-        span.stat-label Completed
-        span.stat-value= stats.completed || 0
-        span.stat-sub Graduated
-    
+        span.stat-label Graduated
+        span.stat-value= stats.totalGraduated || 0
+        a.stat-link(href="/graduated") View All →
+
     .stat-card.stat-transferred
       .stat-icon
         i.fas.fa-exchange-alt
@@ -53,7 +53,7 @@ block content
         span.stat-value= stats.transferred || 0
         span.stat-sub Moved schools
 
-  //- Chart & Recent
+  //- ── Chart & Recent Students ──
   .dashboard-grid
     .chart-card
       .card-header
@@ -61,7 +61,7 @@ block content
         span.badge Class Distribution
       .chart-wrap
         canvas#classChart(height="280")
-    
+
     .recent-card
       .card-header
         h3 Recently Added
@@ -78,37 +78,22 @@ block content
             .student-info
               span.student-name= s.StudentFullName
               span.student-meta= (s.Class ? s.Class.ClassName : 'N/A') + (s.Stream ? ' · ' + s.Stream.StmName : '')
-            .student-status(class=`status-${s.Status.toLowerCase()}`)= s.Status
+            span.status-pill(class=`status-${s.Status.toLowerCase()}`)= s.Status
 
-  //- Bulk Move Section
-  if role === 'admin'
-    .bulk-section
-      .card-header
-        h3
-          i.fas.fa-arrow-right
-          span Promote Entire Class
-      form.bulk-form(action="/students/bulk/move" method="POST")
-        .form-row
-          .form-group
-            label From Class
-            select(name="fromClassID" required)
-              option(value="") Select source class
-              each c in JSON.parse(studentsByClass).map(x => x)
-                option(value="")= c.name
-          .form-group
-            label To Class
-            select#bulkToClass(name="toClassID" required)
-              option(value="") Select destination
-          .form-group
-            label Set Status
-            select(name="setStatus")
-              option(value="") Keep as Ongoing
-              option(value="Completed") Mark as Completed
-              option(value="Transferred") Mark as Transferred
-          .form-group.form-submit
-            button.btn.btn-warning(type="submit" onclick="return confirm('Promote entire class?')")
-              i.fas.fa-level-up-alt
-              span Promote Class
+  //- ── Quick Links ──
+  .quick-links-grid
+    a.quick-link-card(href="/students")
+      i.fas.fa-user-graduate
+      span All Students
+    a.quick-link-card(href="/graduated")
+      i.fas.fa-graduation-cap
+      span Graduated
+    a.quick-link-card(href="/classes")
+      i.fas.fa-chalkboard
+      span Classes
+    a.quick-link-card(href="/departments")
+      i.fas.fa-building-columns
+      span Departments
 
 block scripts
   script.
@@ -122,7 +107,7 @@ block scripts
           datasets: [{
             label: 'Students',
             data: chartData.map(d => d.count),
-            backgroundColor: chartData.map((_, i) => `hsl(${210 + i * 25}, 75%, ${55 + (i%3)*8}%)`),
+            backgroundColor: chartData.map((_, i) => `hsl(${210 + i * 25}, 70%, ${50 + (i % 3) * 8}%)`),
             borderRadius: 8,
             borderSkipped: false
           }]
@@ -135,14 +120,9 @@ block scripts
             tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} students` } }
           },
           scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(128,128,128,0.1)' } },
             x: { grid: { display: false } }
           }
         }
       });
     }
-
-    // Populate bulk class selects from page data
-    const allClasses = !{studentsByClass};
-    const selects = document.querySelectorAll('.bulk-form select[name="fromClassID"], #bulkToClass');
-    // We'll load these via API call
