@@ -6,6 +6,9 @@ block content
       i.fas.fa-school
       span School Information
     .page-actions
+      a.btn.btn-secondary(href="/school/print" target="_blank")
+        i.fas.fa-print
+        span Print
       if role === 'admin'
         a.btn.btn-primary(href="/school/edit")
           i.fas.fa-pen
@@ -22,6 +25,10 @@ block content
             i.fas.fa-school
       .sic-name-block
         h2.sic-name= school.SchoolName
+        if school.POBox
+          p.sic-address
+            i.fas.fa-mailbox
+            span= school.POBox
         if school.Address
           p.sic-address
             i.fas.fa-map-marker-alt
@@ -52,12 +59,12 @@ block content
         .sic-row
           .sic-row-label
             i.fas.fa-mailbox
-            span P.O. Box Address
+            span P.O. Box
           .sic-row-val= school.POBox || '—'
         .sic-row
           .sic-row-label
             i.fas.fa-flag
-            span Tanzania Reg. Number
+            span Tanzania Reg. No.
           .sic-row-val
             if school.TanzaniaRegNumber
               span.reg-badge.reg-tz= school.TanzaniaRegNumber
@@ -82,24 +89,35 @@ block content
             else
               span —
 
-    //- Quick Stats placeholder
+    //- Department Student Summary
     .school-info-card
       .sic-card-header
-        i.fas.fa-chart-bar
-        span System Overview
-      .school-quick-stats
-        a.sqs-item(href="/students")
-          i.fas.fa-user-graduate
-          span Students
-        a.sqs-item(href="/graduated")
-          i.fas.fa-graduation-cap
-          span Graduated
-        a.sqs-item(href="/transferred")
-          i.fas.fa-exchange-alt
-          span Transferred
-        a.sqs-item(href="/departments")
+        i.fas.fa-building-columns
+        span Departments — Student Overview
+      if deptStats.length === 0
+        .empty-state(style="padding:20px")
           i.fas.fa-building-columns
-          span Departments
+          p No departments yet
+      else
+        .dept-overview-table
+          table.dept-ov-tbl
+            thead
+              tr
+                th Department
+                th.th-center Total
+                th.th-center Boys
+                th.th-center Girls
+            tbody
+              each d in deptStats
+                tr
+                  td
+                    a.dept-ov-link(href=`/departments/${d.id}/view`)= d.name
+                  td.td-center
+                    span.count-chip= d.total
+                  td.td-center
+                    span.gender-chip.chip-boy= d.boys
+                  td.td-center
+                    span.gender-chip.chip-girl= d.girls
 
   //- ── Documents Section ──
   .section-heading

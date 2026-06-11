@@ -2,7 +2,7 @@ const express  = require('express');
 const router   = express.Router();
 const path     = require('path');
 const fs       = require('fs');
-const { School } = require('../models');
+const { School, Department, Class, Student } = require('../models');
 const { isAdmin } = require('../middleware/auth');
 const { schoolUpload } = require('../config/upload');
 
@@ -28,11 +28,75 @@ async function getSchool() {
 router.get('/', async (req, res) => {
   try {
     const school = await getSchool();
-    res.render('admin/school/view', { title: 'School Information — SMS', school });
+
+    // Department stats — only Ongoing students
+    const departments = await Department.findAll({
+      include: [{
+        model: Class, as: 'Classes',
+        include: [{
+          model: Student, as: 'Students',
+          attributes: ['StudentID','Gender'],
+          where: { Status: 'Ongoing' }, required: false
+        }]
+      }],
+      order: [['DeptName','ASC']]
+    });
+
+    const deptStats = departments.map(d => {
+      const students = (d.Classes || []).flatMap(c => c.Students || []);
+      return {
+        name:  d.DeptName,
+        id:    d.DeptID,
+        total: students.length,
+        boys:  students.filter(s => s.Gender === 'Male').length,
+        girls: students.filter(s => s.Gender === 'Female').length
+      };
+    });
+
+    res.render('admin/school/view', { title: 'School Information — SMS', school, deptStats });
   } catch (err) {
     console.error(err);
     req.flash('error', 'Failed to load school information');
     res.redirect('/dashboard');
+  }
+});
+
+// ── GET /school/print — print school info ──
+router.get('/print', async (req, res) => {
+  try {
+    const school = await getSchool();
+
+    const departments = await Department.findAll({
+      include: [{
+        model: Class, as: 'Classes',
+        include: [{
+          model: Student, as: 'Students',
+          attributes: ['StudentID','Gender'],
+          where: { Status: 'Ongoing' }, required: false
+        }]
+      }],
+      order: [['DeptName','ASC']]
+    });
+
+    const deptStats = departments.map(d => {
+      const students = (d.Classes || []).flatMap(c => c.Students || []);
+      return {
+        name:  d.DeptName,
+        id:    d.DeptID,
+        total: students.length,
+        boys:  students.filter(s => s.Gender === 'Male').length,
+        girls: students.filter(s => s.Gender === 'Female').length
+      };
+    });
+
+    res.render('admin/school/print', {
+      title: `Print — ${school.SchoolName}`,
+      school, deptStats,
+      printDate: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' })
+    });
+  } catch (err) {
+    console.error(err);
+    res.redirect('/school');
   }
 });
 

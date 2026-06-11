@@ -1570,3 +1570,35 @@ code.mono { font-family: var(--mono); font-size: 0.8rem; color: var(--teal); }
   .school-info-grid     { grid-template-columns: 1fr; }
   .docs-grid            { grid-template-columns: 1fr; }
 }
+
+/* ── Department overview table inside school card ── */
+.dept-overview-table { overflow-x: auto; }
+.dept-ov-tbl { width: 100%; border-collapse: collapse; }
+.dept-ov-tbl thead tr { background: var(--bg-base); }
+.dept-ov-tbl th {
+  padding: 8px 12px; font-size: 0.68rem; font-weight: 700;
+  color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em;
+  text-align: left; border-bottom: 1px solid var(--bg-border);
+}
+.dept-ov-tbl td {
+  padding: 8px 12px; font-size: 0.82rem; color: var(--text-1);
+  border-bottom: 1px solid var(--bg-border); vertical-align: middle;
+}
+.dept-ov-tbl tbody tr:last-child td { border-bottom: none; }
+.dept-ov-tbl tbody tr:hover { background: var(--bg-hover); }
+.dept-ov-link { color: var(--text-1); text-decoration: none; font-weight: 600; }
+.dept-ov-link:hover { color: var(--accent); }
+
+/* ── Pie / Doughnut chart sizing ── */
+.pie-wrap {
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px 16px;
+  height: 300px;
+}
+.chart-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; height: 100%;
+  color: var(--text-3);
+}
+.chart-empty i { font-size: 2.5rem; opacity: 0.3; }
+.chart-empty p { font-size: 0.85rem; }

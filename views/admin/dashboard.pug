@@ -19,7 +19,7 @@ block content
       .stat-info
         span.stat-label Active Students
         span.stat-value= stats.totalStudents || 0
-        span.stat-sub Ongoing + Transferred
+        span.stat-sub Ongoing only
 
     .stat-card.stat-boys
       .stat-icon
@@ -58,9 +58,9 @@ block content
     .chart-card
       .card-header
         h3 Students by Class
-        span.badge Class Distribution
-      .chart-wrap
-        canvas#classChart(height="280")
+        span.badge Pie Distribution
+      .chart-wrap.pie-wrap
+        canvas#classChart
 
     .recent-card
       .card-header
@@ -78,7 +78,7 @@ block content
             .student-info
               span.student-name= s.StudentFullName
               span.student-meta= (s.Class ? s.Class.ClassName : 'N/A') + (s.Stream ? ' · ' + s.Stream.StmName : '')
-            span.status-pill(class=`status-${s.Status.toLowerCase()}`)= s.Status
+            span.status-pill.status-ongoing Ongoing
 
   //- ── Quick Links ──
   .quick-links-grid
@@ -103,29 +103,59 @@ block scripts
     const chartData = !{studentsByClass};
     const ctx = document.getElementById('classChart');
     if (ctx && chartData.length) {
+      // Filter only classes with students
+      const filtered = chartData.filter(d => d.count > 0);
+      const total    = filtered.reduce((s, d) => s + d.count, 0);
+
+      // Generate a rich palette
+      const palette = [
+        '#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444',
+        '#06b6d4','#ec4899','#84cc16','#f97316','#6366f1',
+        '#14b8a6','#f43f5e','#a855f7','#22c55e','#eab308'
+      ];
+
       new Chart(ctx, {
-        type: 'bar',
+        type: 'doughnut',
         data: {
-          labels: chartData.map(d => d.name),
+          labels: filtered.map(d => d.name),
           datasets: [{
-            label: 'Students',
-            data: chartData.map(d => d.count),
-            backgroundColor: chartData.map((_, i) => `hsl(${210 + i * 25}, 70%, ${50 + (i % 3) * 8}%)`),
-            borderRadius: 8,
-            borderSkipped: false
+            data:            filtered.map(d => d.count),
+            backgroundColor: filtered.map((_, i) => palette[i % palette.length]),
+            borderColor:     'transparent',
+            borderWidth: 0,
+            hoverOffset: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          cutout: '60%',
           plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} students` } }
-          },
-          scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(128,128,128,0.1)' } },
-            x: { grid: { display: false } }
+            legend: {
+              position: 'right',
+              labels: {
+                color:     getComputedStyle(document.documentElement).getPropertyValue('--text-2').trim() || '#94a3b8',
+                font:      { family: 'Outfit', size: 12, weight: '500' },
+                padding:   12,
+                boxWidth:  12,
+                boxHeight: 12,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                  return `  ${ctx.label}: ${ctx.parsed} students (${pct}%)`;
+                }
+              }
+            }
           }
         }
       });
+    } else if (ctx) {
+      // No data — show message
+      const parent = ctx.parentElement;
+      parent.innerHTML = '<div class="chart-empty"><i class="fas fa-chart-pie"></i><p>No student data yet</p></div>';
     }

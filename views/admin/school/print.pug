@@ -1,0 +1,273 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= `School Information — ${school.SchoolName}`
+    link(href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet")
+    style.
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Outfit', sans-serif; background: #f1f5f9; color: #0f172a; font-size: 13px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* ── Screen toolbar ── */
+      .screen-toolbar { display:flex; align-items:center; gap:10px; padding:12px 20px; background:#1e293b; }
+      .screen-toolbar button { padding:7px 18px; border:none; border-radius:8px; cursor:pointer; font-family:inherit; font-size:.82rem; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
+      .btn-print { background:#3b82f6; color:#fff; }
+      .btn-close  { background:#334155; color:#cbd5e1; }
+      .toolbar-spacer { flex:1; }
+      .toolbar-info { font-size:.75rem; color:#64748b; }
+
+      /* ── Page wrapper ── */
+      .page { max-width: 820px; margin: 24px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.12); }
+
+      /* ── Header gradient ── */
+      .print-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #312e81 45%, #4c1d95 100%);
+        padding: 32px 36px; display: flex; align-items: center; gap: 24px;
+        color: #fff; position: relative; overflow: hidden;
+      }
+      .print-header::before { content:''; position:absolute; top:-60px; right:-60px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,.05); }
+      .print-header::after  { content:''; position:absolute; bottom:-80px; right:80px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.03); }
+      .header-logo {
+        width: 80px; height: 80px; border-radius: 14px; flex-shrink: 0;
+        background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.2rem; overflow: hidden; position: relative; z-index: 1;
+      }
+      .header-logo img { width:100%; height:100%; object-fit:contain; }
+      .header-body { flex:1; position:relative; z-index:1; }
+      .header-school-name { font-size: 1.8rem; font-weight: 800; letter-spacing:.01em; margin-bottom:6px; }
+      .header-tags { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+      .htag { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.2); border-radius:20px; padding:3px 10px; font-size:.72rem; font-weight:600; }
+      .header-contacts { display:flex; gap:16px; flex-wrap:wrap; font-size:.78rem; opacity:.85; }
+      .header-contacts span { display:flex; align-items:center; gap:5px; }
+      .header-right { text-align:right; position:relative; z-index:1; flex-shrink:0; }
+      .header-sms-brand { font-size:.7rem; opacity:.7; margin-bottom:4px; }
+      .header-date { font-size:.75rem; opacity:.6; }
+
+      /* ── Section heading ── */
+      .section-heading {
+        display:flex; align-items:center; gap:10px;
+        padding: 12px 28px;
+        background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+        font-size: .72rem; font-weight: 800; color: #64748b;
+        text-transform: uppercase; letter-spacing: .12em;
+      }
+      .section-heading .dot { width:6px; height:6px; border-radius:50%; display:inline-block; flex-shrink:0; }
+
+      /* ── Registration table ── */
+      .reg-section { padding: 20px 28px; border-bottom: 1px solid #e2e8f0; }
+      .reg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .reg-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; }
+      .reg-item-label { font-size:.68rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.1em; margin-bottom:5px; }
+      .reg-item-value { font-size:.88rem; font-weight:700; color:#0f172a; }
+      .reg-item-value.mono { font-family:'JetBrains Mono',monospace; }
+      .reg-item-value.badge-tz        { color:#059669; background:#dcfce7; border:1px solid #86efac; padding:2px 10px; border-radius:20px; font-size:.8rem; display:inline-block; }
+      .reg-item-value.badge-pearson   { color:#1d4ed8; background:#dbeafe; border:1px solid #93c5fd; padding:2px 10px; border-radius:20px; font-size:.8rem; display:inline-block; }
+      .reg-item-value.badge-cambridge { color:#6d28d9; background:#ede9fe; border:1px solid #c4b5fd; padding:2px 10px; border-radius:20px; font-size:.8rem; display:inline-block; }
+      .reg-item-value.empty { color:#cbd5e1; font-style:italic; font-size:.8rem; }
+
+      /* ── Department table ── */
+      .dept-section { padding: 20px 28px; border-bottom: 1px solid #e2e8f0; }
+      table.dept-table { width:100%; border-collapse:collapse; }
+      table.dept-table thead tr { background:#1e3a8a; color:#fff; }
+      table.dept-table th { padding:9px 12px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; text-align:left; }
+      table.dept-table th.center { text-align:center; }
+      table.dept-table tbody tr:nth-child(even) { background:#f8fafc; }
+      table.dept-table td { padding:9px 12px; font-size:.82rem; color:#1e293b; border-bottom:1px solid #e2e8f0; vertical-align:middle; }
+      table.dept-table td.center { text-align:center; }
+      .chip { display:inline-flex; align-items:center; gap:3px; padding:2px 9px; border-radius:20px; font-size:.75rem; font-weight:700; }
+      .chip-total    { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+      .chip-boys     { background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd; }
+      .chip-girls    { background:#fce7f3; color:#be185d; border:1px solid #f9a8d4; }
+      .dept-total-row td { font-weight:700; background:#f0f9ff; border-top:2px solid #bfdbfe; }
+
+      /* ── Documents section ── */
+      .docs-section { padding: 20px 28px; border-bottom: 1px solid #e2e8f0; }
+      .docs-list { display:flex; flex-direction:column; gap:10px; }
+      .doc-row { display:flex; align-items:center; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; }
+      .doc-row-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+      .doc-row-icon.map       { background:#dcfce7; color:#059669; }
+      .doc-row-icon.pearson   { background:#dbeafe; color:#1d4ed8; }
+      .doc-row-icon.cambridge { background:#ede9fe; color:#6d28d9; }
+      .doc-row-body { flex:1; }
+      .doc-row-label { font-size:.72rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; }
+      .doc-row-status { font-size:.82rem; font-weight:600; }
+      .doc-row-status.available { color:#059669; }
+      .doc-row-status.missing   { color:#94a3b8; font-style:italic; }
+      .doc-badge-avail { background:#dcfce7; color:#059669; border:1px solid #86efac; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:700; }
+      .doc-badge-miss  { background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:600; }
+
+      /* ── Signature row ── */
+      .signature-row { display:flex; justify-content:space-between; padding:24px 36px; border-top:1px solid #e2e8f0; background:#f8fafc; gap:20px; }
+      .sig-block { flex:1; text-align:center; }
+      .sig-line { border-top:1px solid #94a3b8; padding-top:5px; margin-top:32px; font-size:.7rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+
+      /* ── Footer ── */
+      .print-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 28px; background:#1e3a8a; color:rgba(255,255,255,.6); font-size:.68rem; }
+
+      @media print {
+        body { background:#fff; }
+        .page { margin:0; max-width:100%; box-shadow:none; border-radius:0; }
+        .screen-toolbar { display:none !important; }
+        table.dept-table thead tr { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        table.dept-table tbody tr:nth-child(even) { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        .reg-item-value.badge-tz, .reg-item-value.badge-pearson, .reg-item-value.badge-cambridge { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      }
+      @page { size: A4; margin: 10mm 12mm; }
+
+  body
+    .page
+      //- Screen toolbar
+      .screen-toolbar
+        button.btn-print(onclick="window.print()") 🖨 Print / Save PDF
+        button.btn-close(onclick="window.close()") ✕ Close
+        span.toolbar-spacer
+        span.toolbar-info Printed: #{printDate}
+
+      //- Header
+      .print-header
+        .header-logo
+          if school.LogoPath
+            img(src=school.LogoPath alt="School Logo")
+          else
+            | 🎓
+        .header-body
+          .header-school-name= school.SchoolName
+          .header-tags
+            if school.TanzaniaRegNumber
+              span.htag TZ: #{school.TanzaniaRegNumber}
+            if school.PearsonEdexcelRegNumber
+              span.htag Pearson: #{school.PearsonEdexcelRegNumber}
+            if school.CambridgeRegNumber
+              span.htag Cambridge: #{school.CambridgeRegNumber}
+          .header-contacts
+            if school.POBox
+              span
+                | 📮 #{school.POBox}
+            if school.Phone
+              span
+                | 📞 #{school.Phone}
+            if school.Email
+              span
+                | ✉ #{school.Email}
+        .header-right
+          .header-sms-brand Student Management System
+          .header-date Printed: #{printDate}
+
+      //- Section 1 — Registration Details
+      .section-heading
+        span.dot(style="background:#3b82f6")
+        span Registration Details
+      .reg-section
+        .reg-grid
+          .reg-item
+            .reg-item-label P.O. Box Address
+            .reg-item-value= school.POBox || '—'
+          .reg-item
+            .reg-item-label Physical Address
+            .reg-item-value= school.Address || '—'
+          .reg-item
+            .reg-item-label Tanzania Registration Number
+            if school.TanzaniaRegNumber
+              .reg-item-value.badge-tz= school.TanzaniaRegNumber
+            else
+              .reg-item-value.empty Not registered / not entered
+          .reg-item
+            .reg-item-label Pearson Edexcel Registration Number
+            if school.PearsonEdexcelRegNumber
+              .reg-item-value.badge-pearson= school.PearsonEdexcelRegNumber
+            else
+              .reg-item-value.empty Not registered / not entered
+          .reg-item
+            .reg-item-label Cambridge Registration Number
+            if school.CambridgeRegNumber
+              .reg-item-value.badge-cambridge= school.CambridgeRegNumber
+            else
+              .reg-item-value.empty Not registered / not entered
+          .reg-item
+            .reg-item-label Website
+            .reg-item-value= school.Website || '—'
+
+      //- Section 2 — Department Student Summary
+      .section-heading
+        span.dot(style="background:#10b981")
+        span Department Student Overview (Active / Ongoing)
+      .dept-section
+        if deptStats.length === 0
+          p(style="color:#94a3b8;font-style:italic;font-size:.82rem") No departments found.
+        else
+          table.dept-table
+            thead
+              tr
+                th Department
+                th.center Total Students
+                th.center Boys
+                th.center Girls
+            tbody
+              - let grandTotal = 0; let grandBoys = 0; let grandGirls = 0;
+              each d in deptStats
+                - grandTotal += d.total; grandBoys += d.boys; grandGirls += d.girls;
+                tr
+                  td= d.name
+                  td.center
+                    span.chip.chip-total= d.total
+                  td.center
+                    span.chip.chip-boys
+                      | ♂ #{d.boys}
+                  td.center
+                    span.chip.chip-girls
+                      | ♀ #{d.girls}
+              tr.dept-total-row
+                td Grand Total
+                td.center
+                  span.chip.chip-total= grandTotal
+                td.center
+                  span.chip.chip-boys ♂ #{grandBoys}
+                td.center
+                  span.chip.chip-girls ♀ #{grandGirls}
+
+      //- Section 3 — Official Documents Status
+      .section-heading
+        span.dot(style="background:#f59e0b")
+        span Official Documents Status
+      .docs-section
+        .docs-list
+          .doc-row
+            .doc-row-icon.map
+              i.fas.fa-map
+            .doc-row-body
+              .doc-row-label School Map
+              .doc-row-status(class=school.SchoolMapPath ? 'available' : 'missing')
+                = school.SchoolMapPath ? school.SchoolMapPath.split('/').pop() : 'Not uploaded'
+            span(class=school.SchoolMapPath ? 'doc-badge-avail' : 'doc-badge-miss')= school.SchoolMapPath ? '✓ Available' : 'Missing'
+          .doc-row
+            .doc-row-icon.pearson
+              i.fas.fa-certificate
+            .doc-row-body
+              .doc-row-label Pearson Edexcel Certificate
+              .doc-row-status(class=school.PearsonCertPath ? 'available' : 'missing')
+                = school.PearsonCertPath ? school.PearsonCertPath.split('/').pop() : 'Not uploaded'
+            span(class=school.PearsonCertPath ? 'doc-badge-avail' : 'doc-badge-miss')= school.PearsonCertPath ? '✓ Available' : 'Missing'
+          .doc-row
+            .doc-row-icon.cambridge
+              i.fas.fa-certificate
+            .doc-row-body
+              .doc-row-label Cambridge Registration Certificate
+              .doc-row-status(class=school.CambridgeCertPath ? 'available' : 'missing')
+                = school.CambridgeCertPath ? school.CambridgeCertPath.split('/').pop() : 'Not uploaded'
+            span(class=school.CambridgeCertPath ? 'doc-badge-avail' : 'doc-badge-miss')= school.CambridgeCertPath ? '✓ Available' : 'Missing'
+
+      //- Signatures
+      .signature-row
+        .sig-block
+          .sig-line School Administrator
+        .sig-block
+          .sig-line Head Teacher / Principal
+        .sig-block
+          .sig-line Date
+
+      //- Footer
+      .print-footer
+        span= school.SchoolName + ' — School Information Profile'
+        span Printed: #{printDate}
