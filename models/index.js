@@ -6,6 +6,7 @@ const Student     = require('./Student');
 const User        = require('./User');
 const Graduated   = require('./Graduated');
 const Transferred = require('./Transferred');
+const School      = require('./School');
 
 // Department -> Class
 Department.hasMany(Class, { foreignKey: 'DeptID', as: 'Classes' });
@@ -25,4 +26,4 @@ Student.belongsTo(Stream, { foreignKey: 'StmID', as: 'Stream' });
 
 // Graduated & Transferred — standalone tables (no FK constraints)
 
-module.exports = { sequelize, Department, Class, Stream, Student, User, Graduated, Transferred };
+module.exports = { sequelize, Department, Class, Stream, Student, User, Graduated, Transferred, School };

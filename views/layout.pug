@@ -49,6 +49,9 @@ html(lang="en")
             if role === 'admin'
               .nav-section
                 span.nav-label Admin
+                a.nav-item(href="/school" class=(title && title.includes('School') ? 'active' : ''))
+                  i.fas.fa-school
+                  span School Info
                 a.nav-item(href="/graduated" class=(title && title.includes('Graduated') ? 'active' : ''))
                   i.fas.fa-graduation-cap
                   span Graduated

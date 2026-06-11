@@ -1,0 +1,211 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-school
+      span School Information
+    .page-actions
+      if role === 'admin'
+        a.btn.btn-primary(href="/school/edit")
+          i.fas.fa-pen
+          span Edit Information
+
+  //- ── School Identity Card ──
+  .school-identity-card
+    .sic-left
+      .sic-logo-wrap
+        if school.LogoPath
+          img.sic-logo(src=school.LogoPath alt="School Logo")
+        else
+          .sic-logo-placeholder
+            i.fas.fa-school
+      .sic-name-block
+        h2.sic-name= school.SchoolName
+        if school.Address
+          p.sic-address
+            i.fas.fa-map-marker-alt
+            span= school.Address
+    .sic-right
+      if school.Phone
+        .sic-contact-item
+          i.fas.fa-phone
+          a(href=`tel:${school.Phone}`)= school.Phone
+      if school.Email
+        .sic-contact-item
+          i.fas.fa-envelope
+          a(href=`mailto:${school.Email}`)= school.Email
+      if school.Website
+        .sic-contact-item
+          i.fas.fa-globe
+          a(href=school.Website target="_blank")= school.Website
+
+  //- ── Two column info grid ──
+  .school-info-grid
+
+    //- Registration Details
+    .school-info-card
+      .sic-card-header
+        i.fas.fa-certificate
+        span Registration Details
+      .sic-rows
+        .sic-row
+          .sic-row-label
+            i.fas.fa-mailbox
+            span P.O. Box Address
+          .sic-row-val= school.POBox || '—'
+        .sic-row
+          .sic-row-label
+            i.fas.fa-flag
+            span Tanzania Reg. Number
+          .sic-row-val
+            if school.TanzaniaRegNumber
+              span.reg-badge.reg-tz= school.TanzaniaRegNumber
+            else
+              span —
+        .sic-row
+          .sic-row-label
+            i.fas.fa-award
+            span Pearson Edexcel Reg.
+          .sic-row-val
+            if school.PearsonEdexcelRegNumber
+              span.reg-badge.reg-pearson= school.PearsonEdexcelRegNumber
+            else
+              span —
+        .sic-row
+          .sic-row-label
+            i.fas.fa-award
+            span Cambridge Reg.
+          .sic-row-val
+            if school.CambridgeRegNumber
+              span.reg-badge.reg-cambridge= school.CambridgeRegNumber
+            else
+              span —
+
+    //- Quick Stats placeholder
+    .school-info-card
+      .sic-card-header
+        i.fas.fa-chart-bar
+        span System Overview
+      .school-quick-stats
+        a.sqs-item(href="/students")
+          i.fas.fa-user-graduate
+          span Students
+        a.sqs-item(href="/graduated")
+          i.fas.fa-graduation-cap
+          span Graduated
+        a.sqs-item(href="/transferred")
+          i.fas.fa-exchange-alt
+          span Transferred
+        a.sqs-item(href="/departments")
+          i.fas.fa-building-columns
+          span Departments
+
+  //- ── Documents Section ──
+  .section-heading
+    i.fas.fa-folder-open
+    span Official Documents
+
+  .docs-grid
+
+    //- School Map
+    .doc-card
+      .doc-card-header
+        .doc-icon.doc-map
+          i.fas.fa-map
+        .doc-title
+          span School Map
+          span.doc-sub Site plan / location map
+      .doc-card-body
+        if school.SchoolMapPath
+          .doc-preview
+            if school.SchoolMapPath.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+              a(href=school.SchoolMapPath target="_blank")
+                img.doc-preview-img(src=school.SchoolMapPath alt="School Map")
+            else
+              .doc-file-icon
+                i(class=school.SchoolMapPath.endsWith('.pdf') ? 'fas fa-file-pdf' : 'fas fa-file-alt')
+                span= school.SchoolMapPath.split('/').pop()
+          .doc-actions
+            a.btn.btn-secondary.btn-sm(href=school.SchoolMapPath target="_blank" download)
+              i.fas.fa-download
+              span Download
+            if role === 'admin'
+              form(action="/school/doc/SchoolMapPath?_method=DELETE" method="POST" style="display:inline")
+                button.btn.btn-ghost.btn-sm.text-danger(type="submit" onclick="return confirm('Remove this document?')")
+                  i.fas.fa-trash
+                  span Remove
+        else
+          .doc-empty
+            i.fas.fa-upload
+            span No document uploaded
+            if role === 'admin'
+              a.btn.btn-secondary.btn-sm(href="/school/edit") Upload
+
+    //- Pearson Edexcel Certificate
+    .doc-card
+      .doc-card-header
+        .doc-icon.doc-pearson
+          i.fas.fa-certificate
+        .doc-title
+          span Pearson Edexcel Certificate
+          span.doc-sub Official registration certificate
+      .doc-card-body
+        if school.PearsonCertPath
+          .doc-preview
+            if school.PearsonCertPath.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+              a(href=school.PearsonCertPath target="_blank")
+                img.doc-preview-img(src=school.PearsonCertPath alt="Pearson Certificate")
+            else
+              .doc-file-icon
+                i(class=school.PearsonCertPath.endsWith('.pdf') ? 'fas fa-file-pdf' : 'fas fa-file-alt')
+                span= school.PearsonCertPath.split('/').pop()
+          .doc-actions
+            a.btn.btn-secondary.btn-sm(href=school.PearsonCertPath target="_blank" download)
+              i.fas.fa-download
+              span Download
+            if role === 'admin'
+              form(action="/school/doc/PearsonCertPath?_method=DELETE" method="POST" style="display:inline")
+                button.btn.btn-ghost.btn-sm.text-danger(type="submit" onclick="return confirm('Remove this document?')")
+                  i.fas.fa-trash
+                  span Remove
+        else
+          .doc-empty
+            i.fas.fa-upload
+            span No document uploaded
+            if role === 'admin'
+              a.btn.btn-secondary.btn-sm(href="/school/edit") Upload
+
+    //- Cambridge Certificate
+    .doc-card
+      .doc-card-header
+        .doc-icon.doc-cambridge
+          i.fas.fa-certificate
+        .doc-title
+          span Cambridge Certificate
+          span.doc-sub Registration certificate
+      .doc-card-body
+        if school.CambridgeCertPath
+          .doc-preview
+            if school.CambridgeCertPath.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+              a(href=school.CambridgeCertPath target="_blank")
+                img.doc-preview-img(src=school.CambridgeCertPath alt="Cambridge Certificate")
+            else
+              .doc-file-icon
+                i(class=school.CambridgeCertPath.endsWith('.pdf') ? 'fas fa-file-pdf' : 'fas fa-file-alt')
+                span= school.CambridgeCertPath.split('/').pop()
+          .doc-actions
+            a.btn.btn-secondary.btn-sm(href=school.CambridgeCertPath target="_blank" download)
+              i.fas.fa-download
+              span Download
+            if role === 'admin'
+              form(action="/school/doc/CambridgeCertPath?_method=DELETE" method="POST" style="display:inline")
+                button.btn.btn-ghost.btn-sm.text-danger(type="submit" onclick="return confirm('Remove this document?')")
+                  i.fas.fa-trash
+                  span Remove
+        else
+          .doc-empty
+            i.fas.fa-upload
+            span No document uploaded
+            if role === 'admin'
+              a.btn.btn-secondary.btn-sm(href="/school/edit") Upload

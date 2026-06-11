@@ -1,0 +1,218 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-pen
+      span Edit School Information
+    .page-actions
+      a.btn.btn-ghost(href="/school")
+        i.fas.fa-arrow-left
+        span Back
+
+  form.styled-form(action=action method="POST" enctype="multipart/form-data")
+    input(type="hidden" name="_method" value="PUT")
+
+    //- ── Section 1: Basic Info ──
+    .form-card(style="margin-bottom:20px")
+      .form-section
+        h3.section-title
+          i.fas.fa-school
+          span School Details
+        .form-row
+          .form-group.col-2
+            label(for="SchoolName") School Name *
+            input#SchoolName(type="text" name="SchoolName" value=school.SchoolName || '' placeholder="e.g. St. Mary's Secondary School" required)
+          .form-group
+            label(for="POBox") P.O. Box Address
+            input#POBox(type="text" name="POBox" placeholder="e.g. P.O. Box 1234, Dodoma" value=school.POBox || '')
+
+        .form-row
+          .form-group
+            label(for="Phone") Phone Number
+            input#Phone(type="tel" name="Phone" value=school.Phone || '' placeholder="+255 26 XXX XXXX")
+          .form-group
+            label(for="Email") Email Address
+            input#Email(type="email" name="Email" value=school.Email || '' placeholder="info@school.ac.tz")
+          .form-group
+            label(for="Website") Website
+            input#Website(type="url" name="Website" value=school.Website || '' placeholder="https://school.ac.tz")
+
+        .form-row
+          .form-group.col-2
+            label(for="Address") Physical Address
+            textarea#Address(name="Address" rows="2" placeholder="Street, Area, Region, Tanzania")= school.Address || ''
+
+      .form-section
+        h3.section-title
+          i.fas.fa-certificate
+          span Registration Numbers
+        .form-row
+          .form-group
+            label(for="TanzaniaRegNumber")
+              span.reg-dot.reg-dot-tz
+              span Tanzania Registration Number
+            input#TanzaniaRegNumber(type="text" name="TanzaniaRegNumber" value=school.TanzaniaRegNumber || '' placeholder="e.g. S.3456/T.01")
+          .form-group
+            label(for="PearsonEdexcelRegNumber")
+              span.reg-dot.reg-dot-pearson
+              span Pearson Edexcel Registration Number
+            input#PearsonEdexcelRegNumber(type="text" name="PearsonEdexcelRegNumber" value=school.PearsonEdexcelRegNumber || '' placeholder="e.g. 91234")
+          .form-group
+            label(for="CambridgeRegNumber")
+              span.reg-dot.reg-dot-cambridge
+              span Cambridge Registration Number
+            input#CambridgeRegNumber(type="text" name="CambridgeRegNumber" value=school.CambridgeRegNumber || '' placeholder="e.g. TZ001")
+
+    //- ── Section 2: Logo ──
+    .form-card(style="margin-bottom:20px")
+      .form-section
+        h3.section-title
+          i.fas.fa-image
+          span School Logo
+        .upload-field-row
+          .upload-preview-wrap
+            if school.LogoPath
+              img.upload-preview-img(src=school.LogoPath alt="Current Logo" id="logoPreview")
+            else
+              .upload-preview-placeholder#logoPreview
+                i.fas.fa-image
+          .upload-field-body
+            .upload-current
+              if school.LogoPath
+                span.upload-current-name
+                  i.fas.fa-check-circle
+                  = ' ' + school.LogoPath.split('/').pop()
+              else
+                span.upload-no-file No logo uploaded
+            .form-group
+              label.upload-label(for="LogoFile")
+                i.fas.fa-upload
+                span= school.LogoPath ? 'Replace Logo' : 'Upload Logo'
+              input#LogoFile.upload-input(type="file" name="LogoFile" accept="image/*" onchange="previewImg(this,'logoPreview')")
+            p.field-hint PNG, JPG, WebP — max 10MB
+
+    //- ── Section 3: Documents ──
+    .form-card(style="margin-bottom:20px")
+      .form-section(style="border-bottom:none;padding-bottom:0;margin-bottom:0")
+        h3.section-title
+          i.fas.fa-folder-open
+          span Official Documents
+        p.section-desc(style="margin-bottom:20px") Upload PDF, images, or Word documents (max 10MB each). Uploading a new file replaces the existing one.
+
+        //- School Map
+        .doc-upload-block
+          .dub-header
+            .doc-icon.doc-map
+              i.fas.fa-map
+            .dub-title
+              span School Map
+              span.doc-sub Site plan / location map
+          .dub-body
+            if school.SchoolMapPath
+              .dub-current
+                .dub-current-file
+                  i(class=school.SchoolMapPath.endsWith('.pdf') ? 'fas fa-file-pdf doc-pdf' : (school.SchoolMapPath.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'fas fa-file-image doc-img' : 'fas fa-file-alt'))
+                  span= school.SchoolMapPath.split('/').pop()
+                a.btn.btn-ghost.btn-sm(href=school.SchoolMapPath target="_blank")
+                  i.fas.fa-eye
+                  span View
+            else
+              .dub-current
+                span.upload-no-file No document uploaded
+            .form-group
+              label.upload-label(for="SchoolMapFile")
+                i.fas.fa-upload
+                span= school.SchoolMapPath ? 'Replace Document' : 'Upload Document'
+              input#SchoolMapFile.upload-input(type="file" name="SchoolMapFile" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx")
+            p.field-hint PDF, image, or Word document
+
+        //- Pearson Edexcel Certificate
+        .doc-upload-block
+          .dub-header
+            .doc-icon.doc-pearson
+              i.fas.fa-certificate
+            .dub-title
+              span Pearson Edexcel Certificate
+              span.doc-sub Registration certificate
+          .dub-body
+            if school.PearsonCertPath
+              .dub-current
+                .dub-current-file
+                  i(class=school.PearsonCertPath.endsWith('.pdf') ? 'fas fa-file-pdf doc-pdf' : (school.PearsonCertPath.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'fas fa-file-image doc-img' : 'fas fa-file-alt'))
+                  span= school.PearsonCertPath.split('/').pop()
+                a.btn.btn-ghost.btn-sm(href=school.PearsonCertPath target="_blank")
+                  i.fas.fa-eye
+                  span View
+            else
+              .dub-current
+                span.upload-no-file No document uploaded
+            .form-group
+              label.upload-label(for="PearsonCertFile")
+                i.fas.fa-upload
+                span= school.PearsonCertPath ? 'Replace Certificate' : 'Upload Certificate'
+              input#PearsonCertFile.upload-input(type="file" name="PearsonCertFile" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx")
+            p.field-hint PDF, image, or Word document
+
+        //- Cambridge Certificate
+        .doc-upload-block
+          .dub-header
+            .doc-icon.doc-cambridge
+              i.fas.fa-certificate
+            .dub-title
+              span Cambridge Certificate
+              span.doc-sub Registration certificate
+          .dub-body
+            if school.CambridgeCertPath
+              .dub-current
+                .dub-current-file
+                  i(class=school.CambridgeCertPath.endsWith('.pdf') ? 'fas fa-file-pdf doc-pdf' : (school.CambridgeCertPath.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'fas fa-file-image doc-img' : 'fas fa-file-alt'))
+                  span= school.CambridgeCertPath.split('/').pop()
+                a.btn.btn-ghost.btn-sm(href=school.CambridgeCertPath target="_blank")
+                  i.fas.fa-eye
+                  span View
+            else
+              .dub-current
+                span.upload-no-file No document uploaded
+            .form-group
+              label.upload-label(for="CambridgeCertFile")
+                i.fas.fa-upload
+                span= school.CambridgeCertPath ? 'Replace Certificate' : 'Upload Certificate'
+              input#CambridgeCertFile.upload-input(type="file" name="CambridgeCertFile" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx")
+            p.field-hint PDF, image, or Word document
+
+    //- ── Form Actions ──
+    .form-actions
+      button.btn.btn-primary(type="submit")
+        i.fas.fa-save
+        span Save School Information
+      a.btn.btn-ghost(href="/school") Cancel
+
+block scripts
+  script.
+    function previewImg(input, previewId) {
+      const preview = document.getElementById(previewId);
+      if (!preview || !input.files || !input.files[0]) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'upload-preview-img';
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    // Show filename next to each file input
+    document.querySelectorAll('.upload-input').forEach(input => {
+      input.addEventListener('change', function() {
+        const label = this.previousElementSibling;
+        if (this.files && this.files[0]) {
+          const name = this.files[0].name;
+          const size = (this.files[0].size / 1024).toFixed(0);
+          const hint = this.parentElement.nextElementSibling;
+          if (hint) hint.textContent = `Selected: ${name} (${size} KB)`;
+        }
+      });
+    });

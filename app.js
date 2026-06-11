@@ -18,6 +18,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve uploaded school documents
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Body parsing
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -50,6 +52,7 @@ app.use('/streams',     isAuthenticated, require('./routes/streams'));
 app.use('/users',       isAuthenticated, require('./routes/users'));
 app.use('/graduated',   isAuthenticated, require('./routes/graduated'));
 app.use('/transferred', isAuthenticated, require('./routes/transferred'));
+app.use('/school',      isAuthenticated, require('./routes/school'));
 app.use('/backup',      isAuthenticated, require('./routes/backup'));
 app.use('/graduated',   isAuthenticated, require('./routes/graduated'));
 
@@ -79,6 +82,13 @@ async function start() {
     console.log('✅ Database connected');
 
     await sequelize.sync({ alter: true });
+    // Ensure school record exists
+    const { School } = require('./models');
+    const schoolCount = await School.count();
+    if (schoolCount === 0) {
+      await School.create({ SchoolName: 'My School — Update in Settings' });
+      console.log('✅ Default school record created');
+    }
     console.log('✅ Tables synced');
 
     // Seed default admin

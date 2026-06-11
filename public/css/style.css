@@ -1322,3 +1322,251 @@ code.mono { font-family: var(--mono); font-size: 0.8rem; color: var(--teal); }
   border-color: rgba(59,130,246,0.3);
   transform: translateY(-2px); box-shadow: var(--shadow);
 }
+
+/* ══════════════════════════════════════
+   SCHOOL INFORMATION PAGE
+══════════════════════════════════════ */
+
+/* ── School identity card ── */
+.school-identity-card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 24px;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.school-identity-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--violet), var(--emerald));
+}
+.sic-left { display: flex; align-items: center; gap: 20px; flex: 1; }
+.sic-logo-wrap {
+  width: 80px; height: 80px; flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--bg-border);
+  background: var(--bg-hover);
+}
+.sic-logo { width: 100%; height: 100%; object-fit: contain; }
+.sic-logo-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; color: var(--text-3);
+}
+.sic-name-block { display: flex; flex-direction: column; gap: 6px; }
+.sic-name {
+  font-size: 1.5rem; font-weight: 800; color: var(--text-1);
+  line-height: 1.2;
+}
+.sic-address {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; color: var(--text-3);
+}
+.sic-address i { color: var(--accent); font-size: 0.78rem; }
+.sic-right {
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.sic-contact-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: var(--text-2);
+}
+.sic-contact-item i { color: var(--accent); width: 14px; text-align: center; }
+.sic-contact-item a { color: var(--accent); text-decoration: none; }
+.sic-contact-item a:hover { text-decoration: underline; }
+
+/* ── Info grid (two columns) ── */
+.school-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 20px;
+}
+.school-info-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.sic-card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 18px; border-bottom: 1px solid var(--bg-border);
+  font-size: 0.82rem; font-weight: 700; color: var(--text-2);
+  background: var(--bg-base);
+}
+.sic-card-header i { color: var(--accent); }
+.sic-rows { padding: 8px 0; }
+.sic-row {
+  display: flex; align-items: flex-start;
+  padding: 9px 18px; gap: 12px;
+  border-bottom: 1px solid var(--bg-border);
+}
+.sic-row:last-child { border-bottom: none; }
+.sic-row-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--text-3);
+  min-width: 180px; flex-shrink: 0;
+}
+.sic-row-label i { color: var(--accent); width: 14px; text-align: center; font-size: 0.75rem; }
+.sic-row-val { font-size: 0.85rem; font-weight: 600; color: var(--text-1); }
+
+/* Registration number badges */
+.reg-badge {
+  display: inline-block; padding: 3px 12px; border-radius: 20px;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+}
+.reg-tz       { background: rgba(16,185,129,0.12); color: var(--emerald); border: 1px solid rgba(16,185,129,0.25); }
+.reg-pearson  { background: rgba(59,130,246,0.12); color: var(--accent);  border: 1px solid rgba(59,130,246,0.25); }
+.reg-cambridge{ background: rgba(139,92,246,0.12); color: #a78bfa;        border: 1px solid rgba(139,92,246,0.25); }
+
+/* Registration dot labels */
+.reg-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px;
+}
+.reg-dot-tz        { background: var(--emerald); }
+.reg-dot-pearson   { background: var(--accent); }
+.reg-dot-cambridge { background: #a78bfa; }
+
+/* Quick stats inside school card */
+.school-quick-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.sqs-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; padding: 18px 12px;
+  text-decoration: none; color: var(--text-2);
+  font-size: 0.78rem; font-weight: 600;
+  border-right: 1px solid var(--bg-border);
+  border-bottom: 1px solid var(--bg-border);
+  transition: all 0.2s;
+}
+.sqs-item:nth-child(even) { border-right: none; }
+.sqs-item:nth-last-child(-n+2) { border-bottom: none; }
+.sqs-item i { font-size: 1.2rem; color: var(--accent); }
+.sqs-item:hover { background: var(--accent-dim); color: var(--accent); }
+
+/* ── Documents grid ── */
+.docs-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.doc-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.doc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.doc-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--bg-border);
+  background: var(--bg-base);
+}
+.doc-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.doc-map      { background: rgba(16,185,129,0.12); color: var(--emerald); }
+.doc-pearson  { background: rgba(59,130,246,0.12); color: var(--accent); }
+.doc-cambridge{ background: rgba(139,92,246,0.12); color: #a78bfa; }
+
+.doc-title { display: flex; flex-direction: column; }
+.doc-title span:first-child { font-size: 0.88rem; font-weight: 700; color: var(--text-1); }
+.doc-sub { font-size: 0.72rem; color: var(--text-3); }
+.doc-card-body { padding: 14px 16px; }
+
+.doc-preview { margin-bottom: 10px; }
+.doc-preview-img {
+  width: 100%; max-height: 160px; object-fit: contain;
+  border-radius: var(--radius-sm); border: 1px solid var(--bg-border);
+  background: var(--bg-hover); cursor: pointer;
+  transition: opacity 0.2s;
+}
+.doc-preview-img:hover { opacity: 0.85; }
+.doc-file-icon {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-hover); border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-size: 0.82rem; color: var(--text-1);
+}
+.doc-file-icon i { font-size: 1.4rem; }
+.doc-file-icon i.fa-file-pdf { color: #ef4444; }
+.doc-file-icon i.fa-file-image { color: var(--accent); }
+.doc-actions { display: flex; gap: 8px; align-items: center; }
+.doc-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px; padding: 24px;
+  color: var(--text-3); font-size: 0.82rem;
+  border: 2px dashed var(--bg-border); border-radius: var(--radius-sm);
+}
+.doc-empty i { font-size: 1.6rem; opacity: 0.4; }
+.text-danger { color: var(--rose) !important; }
+
+/* ── Upload fields on edit form ── */
+.upload-field-row {
+  display: flex; align-items: flex-start; gap: 20px; margin-bottom: 8px;
+}
+.upload-preview-wrap {
+  width: 90px; height: 90px; flex-shrink: 0;
+  border-radius: var(--radius); overflow: hidden;
+  border: 2px dashed var(--bg-border); background: var(--bg-hover);
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-preview-img { width: 100%; height: 100%; object-fit: contain; }
+.upload-preview-placeholder { font-size: 1.8rem; color: var(--text-3); }
+.upload-field-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.upload-current { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; }
+.upload-current-name { color: var(--emerald); display: flex; align-items: center; gap: 5px; }
+.upload-current-name i { font-size: 0.85rem; }
+.upload-no-file { color: var(--text-3); font-style: italic; font-size: 0.8rem; }
+
+.upload-input { display: none; }
+.upload-label {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  background: var(--bg-hover); border: 1px solid var(--bg-border);
+  color: var(--text-1); font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.upload-label:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+/* Upload block per document */
+.doc-upload-block {
+  background: var(--bg-hover); border: 1px solid var(--bg-border);
+  border-radius: var(--radius); overflow: hidden;
+  margin-bottom: 14px;
+}
+.doc-upload-block:last-child { margin-bottom: 0; }
+.dub-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--bg-border);
+  background: var(--bg-base);
+}
+.dub-title { display: flex; flex-direction: column; }
+.dub-title span:first-child { font-size: 0.85rem; font-weight: 700; color: var(--text-1); }
+.dub-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.dub-current {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap;
+}
+.dub-current-file {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: var(--text-1); font-weight: 500;
+}
+.dub-current-file i { font-size: 1.2rem; }
+.dub-current-file .doc-pdf   { color: #ef4444; }
+.dub-current-file .doc-img   { color: var(--accent); }
+
+/* Light theme tweaks */
+[data-theme="light"] .school-identity-card { background: #fff; }
+[data-theme="light"] .doc-card             { background: #fff; }
+[data-theme="light"] .doc-upload-block     { background: #f8fafc; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .school-identity-card { flex-direction: column; }
+  .sic-left             { flex-wrap: wrap; }
+  .school-info-grid     { grid-template-columns: 1fr; }
+  .docs-grid            { grid-template-columns: 1fr; }
+}
