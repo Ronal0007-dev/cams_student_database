@@ -1,7 +1,0 @@
-node_modules/
-.env
-.DS_Store
-README.md
-docker-compose.yml
-Dockerfile
-INTEGRATION.md
