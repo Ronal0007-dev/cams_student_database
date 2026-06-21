@@ -1,0 +1,227 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-file-csv
+      span Import Students via CSV
+    .page-actions
+      a.btn.btn-primary(href="/students/template" download)
+        i.fas.fa-download
+        span Download Template
+      a.btn.btn-ghost(href="/students")
+        i.fas.fa-arrow-left
+        span Back to Students
+
+  //- ── Instructions card ──
+  .import-instructions-card
+    .iic-header
+      i.fas.fa-circle-info
+      span How to Import Students
+    .iic-body
+      .iic-steps
+        .iic-step
+          .iic-step-num 1
+          .iic-step-body
+            strong Download the Template
+            p Click "Download Template" above to get the CSV file with the correct column headers and an example row.
+        .iic-step
+          .iic-step-num 2
+          .iic-step-body
+            strong Fill in Your Students
+            p Open the file in Excel, Google Sheets, or any spreadsheet app. Add one student per row. Delete the comment rows (lines starting with #) before saving.
+        .iic-step
+          .iic-step-num 3
+          .iic-step-body
+            strong Save as CSV
+            p Save the file as CSV (UTF-8 encoding). In Excel: File → Save As → CSV UTF-8.
+        .iic-step
+          .iic-step-num 4
+          .iic-step-body
+            strong Upload & Import
+            p Select your CSV file below and click Import. The system will process each row, skip invalid ones, and report results.
+
+    .iic-rules
+      h4 Required Fields
+      .rule-chips
+        span.rule-chip.rule-required StudentFullName
+        span.rule-chip.rule-required Gender (Male / Female)
+        span.rule-chip.rule-required ClassName (must exist)
+      h4(style="margin-top:10px") Optional Fields
+      .rule-chips
+        span.rule-chip DateOfBirth (YYYY-MM-DD)
+        span.rule-chip AdmissionDate (YYYY-MM-DD)
+        span.rule-chip StreamName
+        span.rule-chip ParentPhone
+        span.rule-chip ParentEmail
+        span.rule-chip Address
+        span.rule-chip Status (Ongoing / Completed / Transferred)
+      p.rule-note
+        i.fas.fa-lock
+        | &nbsp;Admission Number is auto-generated — do not include it in your CSV.
+
+  //- ── Upload Form ──
+  .import-upload-card
+    .iuc-header
+      i.fas.fa-upload
+      span Upload CSV File
+    .iuc-body
+      form#importForm(action="/students/import-csv" method="POST" enctype="multipart/form-data")
+        .csv-drop-zone#dropZone(onclick="document.getElementById('csvFile').click()")
+          .drop-icon
+            i.fas.fa-file-csv
+          .drop-text
+            strong Click to select a CSV file
+            span or drag and drop here
+          .drop-hint Accepts .csv files up to 5MB
+          input#csvFile(type="file" name="csvFile" accept=".csv,text/csv" style="display:none" onchange="onFileSelect(this)")
+        .csv-selected(id="csvSelected" style="display:none")
+          i.fas.fa-check-circle
+          span#selectedName
+          button.btn-clear-file(type="button" onclick="clearFile()") ✕
+        .import-form-actions
+          button.btn.btn-primary#importBtn(type="submit" disabled)
+            i.fas.fa-file-import
+            span Import Students
+          a.btn.btn-ghost(href="/students/template" download)
+            i.fas.fa-download
+            span Download Template
+
+  //- ── Results ──
+  if result
+
+    if result.error
+      .import-result-card.result-error
+        .irc-header
+          i.fas.fa-times-circle
+          span Import Failed
+        .irc-body
+          p= result.error
+
+    else
+      .import-result-card(class=result.skipped > 0 ? 'result-partial' : 'result-success')
+        .irc-header
+          i(class=result.skipped === 0 ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle')
+          span= result.skipped === 0 ? 'Import Completed Successfully' : 'Import Completed with Warnings'
+        .irc-stats
+          .irc-stat.stat-total
+            span.irc-stat-value= result.total
+            span.irc-stat-label Total Rows
+          .irc-stat.stat-ok
+            span.irc-stat-value= result.imported
+            span.irc-stat-label Imported
+          .irc-stat.stat-skip
+            span.irc-stat-value= result.skipped
+            span.irc-stat-label Skipped
+
+        if result.rows && result.rows.length
+          .irc-section
+            h4
+              i.fas.fa-check
+              span  Successfully Imported (#{result.rows.length})
+            .irc-table-wrap
+              table.irc-table
+                thead
+                  tr
+                    th Row
+                    th Student Name
+                    th Admission No.
+                    th Class
+                thead
+                tbody
+                  each r in result.rows
+                    tr.row-ok
+                      td.cell-num= r.row
+                      td= r.name
+                      td
+                        code.mono= r.admNo
+                      td= r.cls
+
+        if result.errors && result.errors.length
+          .irc-section
+            h4
+              i.fas.fa-times
+              span  Skipped Rows (#{result.errors.length})
+            .irc-table-wrap
+              table.irc-table
+                thead
+                  tr
+                    th Row
+                    th Student Name
+                    th Reason Skipped
+                tbody
+                  each e in result.errors
+                    tr.row-err
+                      td.cell-num= e.row
+                      td= e.name
+                      td.err-reason= e.reason
+
+        .irc-footer
+          a.btn.btn-primary(href="/students") View All Students →
+
+  //- ── Existing Classes reference ──
+  .import-classes-ref
+    .icr-header
+      i.fas.fa-chalkboard
+      span Available Classes & Streams
+      span.icr-sub Use these exact names in your CSV
+    .icr-grid
+      each c in classes
+        .icr-class-item
+          .icr-class-name
+            i.fas.fa-chalkboard
+            span= c.ClassName
+          if c.Streams && c.Streams.length
+            .icr-streams
+              each s in c.Streams
+                span.icr-stream-chip= s.StmName
+          else
+            span.icr-no-streams No streams
+
+block scripts
+  script.
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('csvFile');
+    const selectedBox = document.getElementById('csvSelected');
+    const selectedName = document.getElementById('selectedName');
+    const importBtn = document.getElementById('importBtn');
+
+    function onFileSelect(input) {
+      if (input.files && input.files[0]) {
+        selectedName.textContent = input.files[0].name + ' (' + (input.files[0].size/1024).toFixed(0) + ' KB)';
+        selectedBox.style.display = 'flex';
+        dropZone.style.display = 'none';
+        importBtn.disabled = false;
+      }
+    }
+
+    function clearFile() {
+      fileInput.value = '';
+      selectedBox.style.display = 'none';
+      dropZone.style.display = 'flex';
+      importBtn.disabled = true;
+    }
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.name.endsWith('.csv')) {
+        const dt = new DataTransfer();
+        dt.items.add(f);
+        fileInput.files = dt.files;
+        onFileSelect(fileInput);
+      } else {
+        alert('Please drop a .csv file');
+      }
+    });
+
+    // Confirm before submitting
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+      if (!confirm('Import students from this CSV? Duplicate-check is by class+name. Continue?')) {
+        e.preventDefault();
+      }
+    });

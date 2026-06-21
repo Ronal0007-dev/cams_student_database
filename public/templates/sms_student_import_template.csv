@@ -1,0 +1,6 @@
+StudentFullName,Gender,DateOfBirth,AdmissionDate,ClassName,StreamName,ParentPhone,ParentEmail,Address,Status
+"Amina Hassan Juma","Female","2009-05-12","2024-01-15","Form 1","Stream A","+255712000001","amina.parent@email.com","Kisutu, Dodoma","Ongoing"
+"John Michael Doe","Male","2010-03-20","2024-01-15","Form 1","Stream A","+255712000002","john.parent@email.com","Makole, Dodoma","Ongoing"
+"Fatuma Ali Mwangi","Female","2009-11-08","2024-01-15","Form 1","Stream B","+255712000003","","Kikuyu Street, Dodoma","Ongoing"
+"David Mwenda Njiru","Male","2010-07-30","2024-01-15","Form 2","","+255712000004","david.parent@email.com","Ihumwa, Dodoma","Ongoing"
+"Salma Kariuki Omar","Female","2008-02-14","2024-01-15","Form 2","Stream A","+255712000005","salma.parent@email.com","","Ongoing"

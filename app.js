@@ -45,6 +45,7 @@ app.use(setLocals);
 // Routes
 app.use('/auth',        require('./routes/auth'));
 app.use('/dashboard',   isAuthenticated, require('./routes/dashboard'));
+app.use('/students',    isAuthenticated, require('./routes/students-import'));
 app.use('/students',    isAuthenticated, require('./routes/students'));
 app.use('/departments', isAuthenticated, require('./routes/departments'));
 app.use('/classes',     isAuthenticated, require('./routes/classes'));
