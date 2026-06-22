@@ -61,6 +61,9 @@ html(lang="en")
                 a.nav-item(href="/users" class=(title && title.includes('User') ? 'active' : ''))
                   i.fas.fa-users-cog
                   span Users
+                a.nav-item(href="/users/roles" class=(title && title.includes('Role') ? 'active' : ''))
+                  i.fas.fa-shield-halved
+                  span Roles
                 a.nav-item(href="/backup" class=(title && title.includes('Backup') ? 'active' : ''))
                   i.fas.fa-database
                   span DB Backup

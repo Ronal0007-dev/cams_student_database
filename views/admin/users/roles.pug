@@ -1,0 +1,304 @@
+extends ../../layout
+
+block content
+  .page-header
+    h2.page-title
+      i.fas.fa-shield-halved
+      span Role Management
+    .page-actions
+      a.btn.btn-ghost(href="/users")
+        i.fas.fa-arrow-left
+        span All Users
+
+  //- ── Role Cards Overview ──
+  .roles-overview-grid
+    each _, roleName in ROLE_PERMISSIONS
+      - const rp = ROLE_PERMISSIONS[roleName]
+      .role-overview-card(class=`role-card-${roleName}`)
+        .roc-header
+          .roc-icon(class=`roc-icon-${roleName}`)
+            i(class=roleName==='admin' ? 'fas fa-crown' : roleName==='teacher' ? 'fas fa-chalkboard-user' : 'fas fa-eye')
+          .roc-meta
+            span.roc-name= rp.label
+            span.roc-count= byRole[roleName].length + ' user' + (byRole[roleName].length !== 1 ? 's' : '')
+        .roc-desc= rp.description
+        .roc-caps
+          each cap in rp.capabilities
+            .roc-cap
+              i.fas.fa-check
+              span= cap
+        if !rp.editable
+          .roc-locked
+            i.fas.fa-lock
+            span Admin role cannot be changed from this panel
+
+  //- ── User Role Assignment Table ──
+  .roles-table-card
+    .rtc-header
+      .rtc-header-left
+        i.fas.fa-users-cog
+        span Assign & Revoke Roles
+        span.count-badge= users.length + ' users'
+      .rtc-header-right
+        .bulk-controls
+          span.bulk-label Select users then:
+          button.btn.btn-sm.btn-emerald#bulkTeacher(type="button" onclick="bulkAssign('teacher')" disabled)
+            i.fas.fa-chalkboard-user
+            span Set as Teacher
+          button.btn.btn-sm.btn-blue#bulkViewer(type="button" onclick="bulkAssign('viewer')" disabled)
+            i.fas.fa-eye
+            span Set as Viewer
+
+    .rtc-body
+      if users.length === 0
+        .empty-state
+          i.fas.fa-users
+          p No users in the system yet
+      else
+        .table-wrap
+          table.data-table#rolesTable
+            thead
+              tr
+                th.select-col
+                  input#selectAll(type="checkbox" title="Select all non-admin users" onchange="toggleSelectAll(this)")
+                th User
+                th Username
+                th Current Role
+                th.roles-col Assign Role
+                th Last Updated
+
+            tbody
+              each u in users
+                - const isCurrentUser = u.UserID === currentUserId
+                - const isAdmin2 = u.Role === 'admin'
+                tr(id=`row-${u.UserID}` class=isCurrentUser ? 'current-user-row' : '')
+                  td.select-col
+                    if !isAdmin2 && !isCurrentUser
+                      input.user-checkbox(
+                        type="checkbox"
+                        value=u.UserID
+                        onchange="onCheckboxChange()"
+                      )
+                    else
+                      span.select-disabled —
+                  td
+                    .user-cell-role
+                      .mini-avatar(class=`avatar-${u.Role}`)= u.FullName.charAt(0).toUpperCase()
+                      .user-cell-info
+                        span.ucell-name= u.FullName
+                          if isCurrentUser
+                            span.you-badge YOU
+                        if u.Email
+                          span.ucell-email= u.Email
+                  td
+                    code.mono= u.Username
+                  td
+                    span.role-pill(id=`role-pill-${u.UserID}` class=`role-pill-${u.Role}`)
+                      i(class=u.Role==='admin' ? 'fas fa-crown' : u.Role==='teacher' ? 'fas fa-chalkboard-user' : 'fas fa-eye')
+                      = ' ' + (u.Role.charAt(0).toUpperCase() + u.Role.slice(1))
+                  td.roles-col
+                    if isAdmin2
+                      .role-locked-msg
+                        i.fas.fa-lock
+                        span Admin — locked
+                    else if isCurrentUser
+                      .role-locked-msg
+                        i.fas.fa-user
+                        span Your account
+                    else
+                      .role-toggle-group(data-userid=u.UserID data-current=u.Role)
+                        label.role-toggle-btn(
+                          class=`rtb-teacher ${u.Role === 'teacher' ? 'rtb-active' : ''}`
+                          id=`btn-teacher-${u.UserID}`
+                        )
+                          input.role-radio(
+                            type="radio"
+                            name=`role_${u.UserID}`
+                            value="teacher"
+                            checked=(u.Role === 'teacher')
+                            onchange=`assignRole(${u.UserID}, 'teacher')`
+                          )
+                          i.fas.fa-chalkboard-user
+                          span Teacher
+                        label.role-toggle-btn(
+                          class=`rtb-viewer ${u.Role === 'viewer' ? 'rtb-active' : ''}`
+                          id=`btn-viewer-${u.UserID}`
+                        )
+                          input.role-radio(
+                            type="radio"
+                            name=`role_${u.UserID}`
+                            value="viewer"
+                            checked=(u.Role === 'viewer')
+                            onchange=`assignRole(${u.UserID}, 'viewer')`
+                          )
+                          i.fas.fa-eye
+                          span Viewer
+                  td
+                    span.update-time(id=`updated-${u.UserID}`)= u.updatedAt ? new Date(u.updatedAt).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : '—'
+
+  //- ── Activity Log (toast container) ──
+  #toastContainer.toast-container
+
+block scripts
+  script.
+    // ── Single role assign (AJAX) ──
+    async function assignRole(userId, newRole) {
+      const prevRole = document.querySelector(`[data-userid="${userId}"]`)?.dataset.current;
+      setRowLoading(userId, true);
+
+      try {
+        const res = await fetch('/users/roles/assign', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({ userId, role: newRole })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          updateRowUI(userId, newRole);
+          showToast(data.message, 'success');
+        } else {
+          // Revert radio to previous
+          revertRadio(userId, prevRole);
+          showToast(data.message || 'Failed to update role', 'error');
+        }
+      } catch (err) {
+        revertRadio(userId, prevRole);
+        showToast('Network error — please try again', 'error');
+      }
+
+      setRowLoading(userId, false);
+    }
+
+    // ── Bulk assign ──
+    async function bulkAssign(role) {
+      const checked = [...document.querySelectorAll('.user-checkbox:checked')];
+      if (checked.length === 0) return;
+
+      const names = checked.map(cb => {
+        const row = document.getElementById('row-' + cb.value);
+        return row ? row.querySelector('.ucell-name')?.textContent.replace('YOU','').trim() : cb.value;
+      });
+
+      if (!confirm(`Set ${checked.length} user(s) to ${role.charAt(0).toUpperCase() + role.slice(1)}?\n\n${names.join('\n')}`)) return;
+
+      const userIds = checked.map(cb => cb.value);
+
+      try {
+        const res = await fetch('/users/roles/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ userIds, role })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          userIds.forEach(id => { updateRowUI(id, role); });
+          document.getElementById('selectAll').checked = false;
+          document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+          updateBulkButtons();
+          showToast(data.message, 'success');
+        } else {
+          showToast(data.message || 'Bulk update failed', 'error');
+        }
+      } catch(err) {
+        showToast('Network error — please try again', 'error');
+      }
+    }
+
+    // ── Update row visuals after a role change ──
+    function updateRowUI(userId, newRole) {
+      const group = document.querySelector(`[data-userid="${userId}"]`);
+      if (group) group.dataset.current = newRole;
+
+      // Role pill
+      const pill = document.getElementById(`role-pill-${userId}`);
+      if (pill) {
+        pill.className = `role-pill role-pill-${newRole}`;
+        const icon = newRole === 'admin' ? 'fa-crown'
+          : newRole === 'teacher' ? 'fa-chalkboard-user' : 'fa-eye';
+        pill.innerHTML = `<i class="fas ${icon}"></i> ${newRole.charAt(0).toUpperCase() + newRole.slice(1)}`;
+      }
+
+      // Toggle buttons active state
+      ['teacher','viewer'].forEach(r => {
+        const btn = document.getElementById(`btn-${r}-${userId}`);
+        if (btn) {
+          btn.classList.toggle('rtb-active', r === newRole);
+          const input = btn.querySelector('input');
+          if (input) input.checked = (r === newRole);
+        }
+      });
+
+      // Avatar color
+      const avatar = document.querySelector(`#row-${userId} .mini-avatar`);
+      if (avatar) {
+        avatar.className = `mini-avatar avatar-${newRole}`;
+      }
+
+      // Updated time
+      const timeEl = document.getElementById(`updated-${userId}`);
+      if (timeEl) timeEl.textContent = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+    }
+
+    function revertRadio(userId, prevRole) {
+      if (!prevRole) return;
+      ['teacher','viewer'].forEach(r => {
+        const btn = document.getElementById(`btn-${r}-${userId}`);
+        if (btn) {
+          btn.classList.toggle('rtb-active', r === prevRole);
+          const input = btn.querySelector('input');
+          if (input) input.checked = (r === prevRole);
+        }
+      });
+    }
+
+    function setRowLoading(userId, loading) {
+      const row = document.getElementById(`row-${userId}`);
+      if (row) row.classList.toggle('row-loading', loading);
+    }
+
+    // ── Select all / bulk controls ──
+    function toggleSelectAll(el) {
+      document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = el.checked);
+      updateBulkButtons();
+    }
+
+    function onCheckboxChange() {
+      const total    = document.querySelectorAll('.user-checkbox').length;
+      const checked  = document.querySelectorAll('.user-checkbox:checked').length;
+      document.getElementById('selectAll').checked        = checked === total;
+      document.getElementById('selectAll').indeterminate  = checked > 0 && checked < total;
+      updateBulkButtons();
+    }
+
+    function updateBulkButtons() {
+      const anyChecked = document.querySelectorAll('.user-checkbox:checked').length > 0;
+      ['bulkTeacher','bulkViewer'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !anyChecked;
+      });
+    }
+
+    // ── Toast notifications ──
+    let toastId = 0;
+    function showToast(message, type) {
+      const id   = ++toastId;
+      const box  = document.getElementById('toastContainer');
+      const el   = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.id = 'toast-' + id;
+      el.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        <span>${message}</span>
+        <button onclick="document.getElementById('toast-${id}').remove()">×</button>
+      `;
+      box.appendChild(el);
+      // Auto-dismiss after 4s
+      setTimeout(() => { const t = document.getElementById('toast-' + id); if(t) t.classList.add('toast-out'); }, 3600);
+      setTimeout(() => { const t = document.getElementById('toast-' + id); if(t) t.remove(); }, 4000);
+    }
